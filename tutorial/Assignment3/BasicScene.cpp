@@ -200,11 +200,10 @@ void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, i
     // note: there's a (small) chance the button state here precedes the mouse press/release event
     Eigen::Matrix3f system = camera->GetRotation().transpose();
     if (pickedModel) {
-        if(std::find(cyls.begin(), cyls.end(), pickedModel) == cyls.end()) {
-            pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
-        } else {
-            cyls[0]->TranslateInSystem(system, {0, 0, -float(yoffset)});
+        if(std::find(cyls.begin(), cyls.end(), pickedModel) != cyls.end()) {
+            return;
         }
+        pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
         pickedToutAtPress = pickedModel->GetTout();
     } else {
         camera->TranslateInSystem(system, {0, 0, -float(yoffset)});
@@ -220,8 +219,13 @@ void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool draggi
         auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
         if (pickedModel) {
             //pickedModel->SetTout(pickedToutAtPress);
-            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE)
-                pickedModel->TranslateInSystem(system, {-float(xAtPress - x) / moveCoeff, float(yAtPress - y) / moveCoeff, 0});
+            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE) {
+                if(std::find(cyls.begin(), cyls.end(), pickedModel) != cyls.end()) {
+                    return;
+                }
+                pickedModel->TranslateInSystem(system,
+                                               {-float(xAtPress - x) / moveCoeff, float(yAtPress - y) / moveCoeff, 0});
+            }
             if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
                 pickedModel->RotateInSystem(system, float(xAtPress - x) / angleCoeff, Axis::Z);
             if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE) {
@@ -310,6 +314,14 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                     tipIndex++;
                 }
                 break;
+
+            case GLFW_KEY_5:
+                for(int i=0; i<cyls.size(); i++) {
+                    auto pos = GetSpherePos(i);
+                    std::cout << pos[0] << "," << pos[1] << "," << std::endl;
+                }
+                break;
+
         }
     }
 }
@@ -318,9 +330,18 @@ Eigen::Vector3f BasicScene::GetSpherePos()
 {
       Eigen::Vector3f l = Eigen::Vector3f(1.6f,0,0);
       Eigen::Vector3f res;
-      res = cyls[tipIndex]->GetRotation()*l;   
-      return res;  
+      res = cyls[tipIndex % cyls.size()]->GetRotation()*l;
+      return res;
 }
+
+Eigen::Vector3f BasicScene::GetSpherePos(int index) {
+    Eigen::Vector3f l = Eigen::Vector3f(1.6f,0,0);
+    Eigen::Vector3f res;
+    res = cyls[index]->GetRotation()*l;
+    return res;
+}
+
+
 
 #define ANGLE_DIVISION 1000
 void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {

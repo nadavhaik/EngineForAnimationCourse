@@ -24,6 +24,7 @@ public:
     Eigen::Vector3f GetSpherePos();
     void RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle);
     void SetupAnimation();
+    Eigen::Vector3f GetSpherePos(int index);
 
 private:
     std::shared_ptr<Movable> root;
