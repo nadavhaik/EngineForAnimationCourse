@@ -179,7 +179,7 @@ void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int
 void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, int yoffset, bool dragging, int buttonState[])
 {
     // note: there's a (small) chance the button state here precedes the mouse press/release event
-    auto system = camera->GetRotation().transpose();
+    Eigen::Matrix3f system = camera->GetRotation().transpose();
     if (pickedModel) {
         pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
         pickedToutAtPress = pickedModel->GetTout();
@@ -192,7 +192,7 @@ void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, i
 void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool dragging, int* buttonState)
 {
     if (dragging) {
-        auto system = camera->GetRotation().transpose() * GetRotation();
+        Eigen::Matrix3f system = camera->GetRotation().transpose() * GetRotation();
         auto moveCoeff = camera->CalcMoveCoeff(pickedModelDepth, viewport->width);
         auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
         if (pickedModel) {
@@ -223,7 +223,7 @@ void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool draggi
 
 void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods)
 {
-    auto system = camera->GetRotation().transpose();
+    Eigen::Matrix3f system = camera->GetRotation().transpose();
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
