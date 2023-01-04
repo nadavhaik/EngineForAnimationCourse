@@ -32,6 +32,7 @@
 
 using namespace cg3d;
 
+#define scaleFactor 1.0f
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
@@ -73,7 +74,6 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     axis[0]->Scale(4,Axis::XYZ);
     axis[0]->lineWidth = 5;
     root->AddChild(axis[0]);
-    float scaleFactor = 1; 
     cyls.push_back( Model::Create("cyl",cylMesh, material));
     cyls[0]->Scale(scaleFactor,Axis::X);
     cyls[0]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
@@ -88,7 +88,6 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
         cyls[i-1]->AddChild(cyls[i]);
     }
     cyls[0]->Translate({0.8f*scaleFactor,0,0});
-
     auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
       return model->meshIndex;//(model->GetMeshList())[0]->data.size()-1;
     };
@@ -99,6 +98,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     autoCube->Translate({-6,0,0});
     autoCube->Scale(1.5f);
 //    sphere1->Translate({-2,0,0});
+
 
     autoCube->showWireframe = true;
     camera->Translate(22, Axis::Z);
@@ -130,6 +130,11 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     std::cout<< "faces to edges: \n "<< EMAP.transpose()<<std::endl;
     std::cout<< "edges indices: \n" << EI.transpose() <<std::endl;
 
+    isAnimating = false;
+
+    RotateSlowly(cyls[0], Eigen::Vector3f(1, 1 ,1), 0.8);
+
+
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
@@ -142,7 +147,21 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 //    cyl->Rotate(0.001f, Axis::Y);
     cube->Rotate(0.1f, Axis::XYZ);
+    Animate();
 }
+
+void BasicScene::Animate() {
+    if(movements.empty()) {
+        return;
+    }
+    MovementCommand nextCommand = movements.front();
+    if(movements.empty()) {
+        return;
+    }
+    movements.pop();
+    nextCommand.model->Rotate(nextCommand.angle, nextCommand.axis);
+}
+
 
 void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int action, int mods, int buttonState[])
 {
@@ -181,7 +200,11 @@ void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, i
     // note: there's a (small) chance the button state here precedes the mouse press/release event
     Eigen::Matrix3f system = camera->GetRotation().transpose();
     if (pickedModel) {
-        pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
+        if(std::find(cyls.begin(), cyls.end(), pickedModel) == cyls.end()) {
+            pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
+        } else {
+            cyls[0]->TranslateInSystem(system, {0, 0, -float(yoffset)});
+        }
         pickedToutAtPress = pickedModel->GetTout();
     } else {
         camera->TranslateInSystem(system, {0, 0, -float(yoffset)});
@@ -298,3 +321,17 @@ Eigen::Vector3f BasicScene::GetSpherePos()
       res = cyls[tipIndex]->GetRotation()*l;   
       return res;  
 }
+
+#define ANGLE_DIVISION 1000
+void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
+    for(int i=0; i<ANGLE_DIVISION; i++) {
+        MovementCommand command = {model, axis, angle/ANGLE_DIVISION};
+        movements.push(command);
+    }
+}
+
+void BasicScene::SetupAnimation() {
+    int nextIndex = cyls.size() - 1;
+
+}
+
