@@ -30,8 +30,14 @@ public:
     void RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle);
     void ChangeAnimationState();
     Eigen::Vector3f GetCylinderPos(int cylIndex);
+    void printMatrix(const Eigen::MatrixXf &mat);
+    void PrintRotationMatrices(std::shared_ptr<cg3d::Model> model);
+    std::string VectorToString(Eigen::Vector3f vec);
+
 
 private:
+    Eigen::Vector3f GetDestination();
+    std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Matrix3f> GetRotationMatrices(std::shared_ptr<cg3d::Model> model);
     std::shared_ptr<Movable> root;
     std::shared_ptr<cg3d::Model> sphere1 ,cube;
     std::shared_ptr<cg3d::AutoMorphingModel> autoCube;

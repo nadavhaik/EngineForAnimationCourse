@@ -158,16 +158,15 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 
 #define MIN_DISTANCE_FOR_MOVEMENT 0.05f
 void BasicScene::CalculateNextSteps() {
-    Eigen::Vector3f l(1.6f,0,0);
     Eigen::Vector3f E = GetCylinderPos(cyls.size()-1);
-    Eigen::Vector3f D = sphere1->GetRotation()*sphere1->GetTranslation();
-    float absDistance = (D - E).norm();
-    if(absDistance > SINGLE_CYLINDER_SIZE * cyls.size()) {
-        std::cout << "Too far! distance is: " << absDistance << std::endl;
+    Eigen::Vector3f D = GetDestination();
+    float distanceFromEnd = (D - E).norm();
+    if(D.norm() > SINGLE_CYLINDER_SIZE * cyls.size()) {
+        std::cout << "Too far! distance is: " << D.norm() << std::endl;
         StopAnimating();
         return;
     }
-    if(absDistance < MIN_DISTANCE_FOR_MOVEMENT){
+    if(distanceFromEnd < MIN_DISTANCE_FOR_MOVEMENT){
         std::cout << "Done!" << std::endl;
         StopAnimating();
         return;
@@ -298,26 +297,19 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_RIGHT:
                 cyls[pickedIndex]->RotateInSystem(system, -0.1f, Axis::Y);
                 break;
-            case GLFW_KEY_W:
-                camera->TranslateInSystem(system, {0, 0.1f, 0});
-                break;
-            case GLFW_KEY_S:
-                camera->TranslateInSystem(system, {0, -0.1f, 0});
-                break;
-            case GLFW_KEY_A:
-                camera->TranslateInSystem(system, {-0.1f, 0, 0});
-                break;
             case GLFW_KEY_D:
-                camera->TranslateInSystem(system, {0.1f, 0, 0});
+                std::cout << "Destination: " << VectorToString(GetDestination()) << std::endl;
                 break;
-            case GLFW_KEY_B:
-                camera->TranslateInSystem(system, {0, 0, 0.1f});
+            case GLFW_KEY_P:
+                PrintRotationMatrices(cyls[pickedIndex]);
                 break;
-            case GLFW_KEY_F:
-                camera->TranslateInSystem(system, {0, 0, -0.1f});
+            case GLFW_KEY_T:
+                for(int i=0; i<cyls.size(); i++){
+                    std::cout<<"Cylinder no. "<< i << ": " << VectorToString(GetCylinderPos(i)) << std::endl;
+                }
                 break;
             case GLFW_KEY_1:
-                if( pickedIndex > 0)
+                if(pickedIndex > 0)
                   pickedIndex--;
                 break;
             case GLFW_KEY_2:
@@ -377,8 +369,7 @@ Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
 #define ANGLE_DIVISION 1000
 void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
     for(int i=0; i<ANGLE_DIVISION; i++) {
-        MovementCommand command = {model, axis, angle/ANGLE_DIVISION};
-        movements.push(command);
+        movements.push({model, axis, angle/ANGLE_DIVISION});
     }
 }
 
@@ -401,6 +392,63 @@ void BasicScene::StopAnimating() { state = STATIC; }
 void BasicScene::ChangeAnimationState() {
     if(state == STATIC) StartAnimating();
     else StopAnimating();
+}
+
+void BasicScene::printMatrix(const Eigen::MatrixXf &mat) {
+    for(int i=0; i<mat.cols(); i++) {
+        for(int j=0; j<mat.rows(); j++) {
+            std::cout << mat(j, i) << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Matrix3f>
+        BasicScene::GetRotationMatrices(std::shared_ptr<cg3d::Model> model) {
+    Eigen::Vector3f eulerAngles = cyls[pickedIndex]->GetRotation().eulerAngles(2, 0, 2);
+    Eigen::Matrix3d A1;
+    A1 <<   cos(eulerAngles[0]), -sin(eulerAngles[0]), 0,
+            sin(eulerAngles[0]),  cos(eulerAngles[0]), 0,
+            0                      ,  0                    , 1;
+
+    Eigen::Matrix3d A2;
+    A2 << 1         , 0                     ,  0                     ,
+            0       , cos(eulerAngles[1]), -sin(eulerAngles[1]),
+            0       , sin(eulerAngles[1]),  cos(eulerAngles[1]);
+
+    Eigen::Matrix3d A3;
+    A3 <<   cos(eulerAngles[2])    , -sin(eulerAngles[2]) , 0,
+            sin(eulerAngles[2])    , cos(eulerAngles[2])  , 0,
+            0                         , 0                       , 1;
+
+    return std::make_tuple(A1.cast<float>(), A2.cast<float>(), A3.cast<float>());
+
+}
+
+void BasicScene::PrintRotationMatrices(std::shared_ptr<cg3d::Model> model) {
+    std::tuple<Eigen::Matrix3f, Eigen::Matrix3f, Eigen::Matrix3f> rotationMatrices = GetRotationMatrices(model);
+
+    Eigen::Matrix3f A1 = std::get<0>(rotationMatrices);
+    Eigen::Matrix3f A2 = std::get<1>(rotationMatrices);
+    Eigen::Matrix3f A3 = std::get<2>(rotationMatrices);
+
+    std::cout << "A1:" << std::endl;
+    printMatrix(A1);
+
+    std::cout << "A2:" << std::endl;
+    printMatrix(A2);
+
+    std::cout << "A3:" << std::endl;
+    printMatrix(A3);
+}
+
+Eigen::Vector3f BasicScene::GetDestination() {
+    return sphere1->GetRotation()*sphere1->GetTranslation();
+}
+
+std::string BasicScene::VectorToString(Eigen::Vector3f vec) {
+    return "(" + std::to_string(vec.x()) + ", " + std::to_string(vec.y()) + ", " +
+        std::to_string(vec.z()) + ")";
 }
 
 
