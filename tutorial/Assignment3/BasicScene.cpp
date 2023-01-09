@@ -32,8 +32,13 @@
 
 using namespace cg3d;
 
+#define DRAW_AXIS false
 #define SCALE_FACTOR 1.0f
 #define SINGLE_CYLINDER_SIZE 1.6f
+#define MIN_DISTANCE_FOR_MOVEMENT 0.05f
+#define ANGLE_DIVISION 1000
+
+
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
@@ -70,23 +75,41 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
-    axis.push_back(Model::Create("axis",coordsys,material1));
-    axis[0]->mode = 1;
-    axis[0]->Scale(4,Axis::XYZ);
-    axis[0]->lineWidth = 5;
-    root->AddChild(axis[0]);
+
+
     cyls.push_back( Model::Create("cyl",cylMesh, material));
     cyls[0]->Scale(SCALE_FACTOR, Axis::X);
     cyls[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
     root->AddChild(cyls[0]);
+    if(DRAW_AXIS) {
+        axis.push_back(Model::Create("axis", coordsys, material1));
+        axis[0]->mode = 1;
+        axis[0]->Scale(4, Axis::XYZ);
+        axis[0]->lineWidth = 5;
+        axis[0]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, Axis::X);
+        axis[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+        cyls[0]->AddChild(axis[0]);
+    }
+
+
    
     for(int i = 1;i < 3; i++)
     { 
         cyls.push_back( Model::Create("cyl", cylMesh, material));
         cyls[i]->Scale(SCALE_FACTOR, Axis::X);
-        cyls[i]->Translate(1.6f * SCALE_FACTOR, Axis::X);
+        cyls[i]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR , Axis::X);
         cyls[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
         cyls[i-1]->AddChild(cyls[i]);
+
+        if(DRAW_AXIS) {
+            axis.push_back(Model::Create("axis", coordsys, material1));
+            axis[i]->mode = 1;
+            axis[i]->lineWidth = 5;
+            axis[i]->Scale(4, Axis::XYZ);
+            axis[i]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, Axis::X);
+            axis[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+            cyls[i]->AddChild(axis[i]);
+        }
     }
     cyls[0]->Translate({SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0});
     auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
@@ -156,7 +179,6 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     }
 }
 
-#define MIN_DISTANCE_FOR_MOVEMENT 0.05f
 void BasicScene::CalculateNextSteps() {
     Eigen::Vector3f E = GetCylinderPos(cyls.size()-1);
     Eigen::Vector3f D = GetDestination();
@@ -366,7 +388,6 @@ Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
 
 
 
-#define ANGLE_DIVISION 1000
 void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
     for(int i=0; i<ANGLE_DIVISION; i++) {
         movements.push({model, axis, angle/ANGLE_DIVISION});
