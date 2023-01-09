@@ -202,16 +202,21 @@ void BasicScene::CalculateNextSteps() {
 
     Eigen::Vector3f R;
     if(nextArmToMove == 0) {
-        R = Eigen::Vector3f::Zero(); //Eigen::Vector3f(SINGLE_CYLINDER_SIZE/2.0f, 0, 0);
+        R = Eigen::Vector3f::Zero();
     } else {
         R = GetCylinderPos(nextArmToMove - 1);
     }
-    std::cout << "nextArm: " << nextArmToMove << ", R: " << VectorToString(R) << std::endl;
+//    std::cout << "nextArm: " << nextArmToMove << ", R: " << VectorToString(R) << std::endl;
     Eigen::Vector3f RD = D - R;
     Eigen::Vector3f RE = E - R;
-    Eigen::Vector3f normal = RE.cross(RD) ;
 
-    float rotationAngle = acos(RD.dot(RE) / (RD.norm() * RE.norm()));
+    Eigen::Vector3f normal = RE.cross(RD).normalized();
+
+
+//    std::cout << "normal: " << VectorToString(normal) << std::endl;
+
+    float rotationAngle = acos(RE.dot(RD) / (RE.norm() * RD.norm()));
+
     RotateConstantly(cyls[nextArmToMove], normal, rotationAngle);
     nextArmToMove = nextArmToMove == 0 ? cyls.size() - 1 : nextArmToMove - 1;
 }
@@ -394,9 +399,13 @@ Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
 }
 
 
-
 void BasicScene::RotateConstantly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
-    for(float movement= 0.0f; movement < angle; movement += RADIANS_PER_FRAME) {
+
+    if(angle < 0) {
+        angle += 2 * std::numbers::pi;
+    }
+
+    for(float movement = 0.0f; movement < angle; movement += RADIANS_PER_FRAME) {
         movements.push({model, axis, RADIANS_PER_FRAME});
     }
     float remainder = (RADIANS_PER_FRAME * angle) - ((int) (RADIANS_PER_FRAME * angle));
