@@ -32,11 +32,15 @@
 
 using namespace cg3d;
 
+#define RADIANS_IN_DEGREE 0.0174533f
+
 #define DRAW_AXIS false
-#define SCALE_FACTOR 1.0f
+#define SPHERE_SCALE_FACTOR 0.8f
+#define CYLS_SCALE_FACTOR 0.5f
 #define SINGLE_CYLINDER_SIZE 1.6f
 #define MIN_DISTANCE_FOR_MOVEMENT 0.05f
-#define ANGLE_DIVISION 1000
+#define DEGREES_PER_FRAME 0.5f
+#define RADIANS_PER_FRAME (RADIANS_IN_DEGREE * DEGREES_PER_FRAME)
 
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
@@ -65,8 +69,8 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     auto cylMesh{IglLoader::MeshFromFiles("cyl_igl","data/xcylinder.obj")};
     auto cubeMesh{IglLoader::MeshFromFiles("cube_igl","data/cube_old.obj")};
     sphere1 = Model::Create( "sphere",sphereMesh, material);    
-    cube = Model::Create( "cube", cubeMesh, material);
-    
+//    cube = Model::Create( "cube", cubeMesh, material);
+
     //Axis
     Eigen::MatrixXd vertices(6,3);
     vertices << -1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1;
@@ -78,16 +82,16 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
 
     cyls.push_back( Model::Create("cyl",cylMesh, material));
-    cyls[0]->Scale(SCALE_FACTOR, Axis::X);
-    cyls[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+    cyls[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE / 2.0f, 0, 0));
+    cyls[0]->Scale(CYLS_SCALE_FACTOR, Axis::YZ);
     root->AddChild(cyls[0]);
     if(DRAW_AXIS) {
         axis.push_back(Model::Create("axis", coordsys, material1));
         axis[0]->mode = 1;
         axis[0]->Scale(4, Axis::XYZ);
         axis[0]->lineWidth = 5;
-        axis[0]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, Axis::X);
-        axis[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+        axis[0]->Translate(SINGLE_CYLINDER_SIZE  / 2.0f, Axis::X);
+        axis[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE / 2.0f, 0, 0));
         cyls[0]->AddChild(axis[0]);
     }
 
@@ -96,9 +100,9 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     for(int i = 1;i < 3; i++)
     { 
         cyls.push_back( Model::Create("cyl", cylMesh, material));
-        cyls[i]->Scale(SCALE_FACTOR, Axis::X);
-        cyls[i]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR , Axis::X);
-        cyls[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+        cyls[i]->Translate(SINGLE_CYLINDER_SIZE, Axis::X);
+        cyls[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE / 2.0f, 0, 0));
+        cyls[i]->Scale(CYLS_SCALE_FACTOR, Axis::YZ);
         cyls[i-1]->AddChild(cyls[i]);
 
         if(DRAW_AXIS) {
@@ -106,57 +110,58 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
             axis[i]->mode = 1;
             axis[i]->lineWidth = 5;
             axis[i]->Scale(4, Axis::XYZ);
-            axis[i]->Translate(SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, Axis::X);
-            axis[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
+            axis[i]->Translate(SINGLE_CYLINDER_SIZE / 2.0f, Axis::X);
+            axis[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE / 2.0f, 0, 0));
             cyls[i]->AddChild(axis[i]);
         }
     }
-    cyls[0]->Translate({SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0});
+    cyls[0]->Translate({SINGLE_CYLINDER_SIZE / 2.0f, 0, 0});
     auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
       return model->meshIndex;//(model->GetMeshList())[0]->data.size()-1;
     };
-    autoCube = AutoMorphingModel::Create(*cube, morphFunc);
+//    autoCube = AutoMorphingModel::Create(*cube, morphFunc);
 
   
     sphere1->showWireframe = true;
-    autoCube->Translate({-6,0,0});
-    autoCube->Scale(1.5f);
+    sphere1->Scale(SPHERE_SCALE_FACTOR, Axis::XYZ);
+//    autoCube->Translate({-6,0,0});
+//    autoCube->Scale(1.5f);
     state = STATIC;
 //    sphere1->Translate({-2,0,0});
 
 
-    autoCube->showWireframe = true;
+//    autoCube->showWireframe = true;
     camera->Translate(22, Axis::Z);
     root->AddChild(sphere1);
 //    root->AddChild(cyl);
-    root->AddChild(autoCube);
+//    root->AddChild(autoCube);
     // points = Eigen::MatrixXd::Ones(1,3);
     // edges = Eigen::MatrixXd::Ones(1,3);
     // colors = Eigen::MatrixXd::Ones(1,3);
     
     // cyl->AddOverlay({points,edges,colors},true);
-    cube->mode =1   ; 
-    auto mesh = cube->GetMeshList();
+//    cube->mode =1   ;
+//    auto mesh = cube->GetMeshList();
 
     //autoCube->AddOverlay(points,edges,colors);
     // mesh[0]->data.push_back({V,F,V,E});
-    int num_collapsed;
+//    int num_collapsed;
 
   // Function to reset original mesh and data structures
-    V = mesh[0]->data[0].vertices;
-    F = mesh[0]->data[0].faces;
-   // igl::read_triangle_mesh("data/cube.off",V,F);
-    igl::edge_flaps(F,E,EMAP,EF,EI);
-    std::cout<< "vertices: \n" << V <<std::endl;
-    std::cout<< "faces: \n" << F <<std::endl;
+//    V = mesh[0]->data[0].vertices;
+//    F = mesh[0]->data[0].faces;
+//   // igl::read_triangle_mesh("data/cube.off",V,F);
+//    igl::edge_flaps(F,E,EMAP,EF,EI);
+//    std::cout<< "vertices: \n" << V <<std::endl;
+//    std::cout<< "faces: \n" << F <<std::endl;
+//
+//    std::cout<< "edges: \n" << E.transpose() <<std::endl;
+//    std::cout<< "edges to faces: \n" << EF.transpose() <<std::endl;
+//    std::cout<< "faces to edges: \n "<< EMAP.transpose()<<std::endl;
+//    std::cout<< "edges indices: \n" << EI.transpose() <<std::endl;
 
-    std::cout<< "edges: \n" << E.transpose() <<std::endl;
-    std::cout<< "edges to faces: \n" << EF.transpose() <<std::endl;
-    std::cout<< "faces to edges: \n "<< EMAP.transpose()<<std::endl;
-    std::cout<< "edges indices: \n" << EI.transpose() <<std::endl;
 
-
-    //RotateSlowly(cyls[0], Eigen::Vector3f(1, 1 ,1), 0.8);
+    //RotateConstantly(cyls[0], Eigen::Vector3f(1, 1 ,1), 0.8);
     nextArmToMove = cyls.size()-1;
 
 }
@@ -170,7 +175,7 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform1f("specular_exponent", 5.0f);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 //    cyl->Rotate(0.001f, Axis::Y);
-    cube->Rotate(0.1f, Axis::XYZ);
+//    cube->Rotate(0.1f, Axis::XYZ);
     if(state != ANIMATING) return;
     if(movements.empty()) {
         CalculateNextSteps();
@@ -182,9 +187,10 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 void BasicScene::CalculateNextSteps() {
     Eigen::Vector3f E = GetCylinderPos(cyls.size()-1);
     Eigen::Vector3f D = GetDestination();
+    float distanceFromStart = D.norm();
     float distanceFromEnd = (D - E).norm();
-    if(D.norm() > SINGLE_CYLINDER_SIZE * cyls.size()) {
-        std::cout << "Too far! distance is: " << D.norm() << std::endl;
+    if(distanceFromStart > SINGLE_CYLINDER_SIZE * cyls.size()) {
+        std::cout << "Too far! distance is: " << distanceFromStart << std::endl;
         StopAnimating();
         return;
     }
@@ -196,15 +202,17 @@ void BasicScene::CalculateNextSteps() {
 
     Eigen::Vector3f R;
     if(nextArmToMove == 0) {
-        R = Eigen::Vector3f::Zero();
+        R = Eigen::Vector3f::Zero(); //Eigen::Vector3f(SINGLE_CYLINDER_SIZE/2.0f, 0, 0);
     } else {
         R = GetCylinderPos(nextArmToMove - 1);
     }
+    std::cout << "nextArm: " << nextArmToMove << ", R: " << VectorToString(R) << std::endl;
     Eigen::Vector3f RD = D - R;
     Eigen::Vector3f RE = E - R;
-    Eigen::Vector3f normal = RE.cross(RD);
+    Eigen::Vector3f normal = RE.cross(RD) ;
+
     float rotationAngle = acos(RD.dot(RE) / (RD.norm() * RE.norm()));
-    RotateSlowly(cyls[nextArmToMove], normal, rotationAngle);
+    RotateConstantly(cyls[nextArmToMove], normal, rotationAngle);
     nextArmToMove = nextArmToMove == 0 ? cyls.size() - 1 : nextArmToMove - 1;
 }
 
@@ -378,7 +386,6 @@ Eigen::Vector3f BasicScene::GetSpherePos()
 
 Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
     Eigen::Vector3f l = Eigen::Vector3f(SINGLE_CYLINDER_SIZE, 0, 0);
-    std::vector<std::shared_ptr<Model>> relevantCyls(cyls.begin(), cyls.begin() + cylIndex);
     Eigen::Vector3f result = Eigen::Vector3f::Zero();
     for(int i=0; i<=cylIndex; i++) {
         result += cyls[i]->GetRotation() * l;
@@ -388,9 +395,13 @@ Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
 
 
 
-void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
-    for(int i=0; i<ANGLE_DIVISION; i++) {
-        movements.push({model, axis, angle/ANGLE_DIVISION});
+void BasicScene::RotateConstantly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle) {
+    for(float movement= 0.0f; movement < angle; movement += RADIANS_PER_FRAME) {
+        movements.push({model, axis, RADIANS_PER_FRAME});
+    }
+    float remainder = (RADIANS_PER_FRAME * angle) - ((int) (RADIANS_PER_FRAME * angle));
+    if(remainder > 0) {
+        movements.push({model, axis, remainder});
     }
 }
 

@@ -175,9 +175,9 @@ void Movable::Scale(float factor, Axis axis)
     if (abs(factor) < 1e-5) return; // factor is too small
 
     Eigen::Vector3f scaleVec(
-            axis == Axis::X || axis == Axis::XYZ ? factor : 1.0f,
-            axis == Axis::Y || axis == Axis::XYZ ? factor : 1.0f,
-            axis == Axis::Z || axis == Axis::XYZ ? factor : 1.0f
+            axis == Axis::X || axis == Axis::XY || axis == Axis::XZ || axis == Axis::XYZ ? factor : 1.0f,
+            axis == Axis::Y || axis == Axis::XY || axis == Axis::YZ || axis == Axis::XYZ ? factor : 1.0f,
+            axis == Axis::Z || axis == Axis::XZ || axis == Axis::YZ || axis == Axis::XYZ ? factor : 1.0f
     );
 
     Scale(scaleVec);
