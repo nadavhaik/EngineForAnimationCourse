@@ -41,6 +41,7 @@ using namespace cg3d;
 #define MIN_DISTANCE_FOR_MOVEMENT 0.05f
 #define DEGREES_PER_FRAME 0.5f
 #define RADIANS_PER_FRAME (RADIANS_IN_DEGREE * DEGREES_PER_FRAME)
+#define NUMBER_OF_CYLINDERS 5
 
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
@@ -97,7 +98,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
 
    
-    for(int i = 1;i < 3; i++)
+    for(int i = 1;i < NUMBER_OF_CYLINDERS; i++)
     { 
         cyls.push_back( Model::Create("cyl", cylMesh, material));
         cyls[i]->Translate(SINGLE_CYLINDER_SIZE, Axis::X);
