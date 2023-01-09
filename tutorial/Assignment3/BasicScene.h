@@ -11,6 +11,11 @@ struct MovementCommand {
     float angle;
 };
 
+enum State {
+    STATIC,
+    ANIMATING
+};
+
 class BasicScene : public cg3d::Scene
 {
 public:
@@ -23,17 +28,16 @@ public:
     void KeyCallback(cg3d::Viewport* viewport, int x, int y, int key, int scancode, int action, int mods) override;
     Eigen::Vector3f GetSpherePos();
     void RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3f axis, float angle);
-    void SetupAnimation();
-    Eigen::Vector3f GetSpherePos(int index);
+    void ChangeAnimationState();
+    Eigen::Vector3f GetCylinderPos(int cylIndex);
 
 private:
     std::shared_ptr<Movable> root;
     std::shared_ptr<cg3d::Model> sphere1 ,cube;
     std::shared_ptr<cg3d::AutoMorphingModel> autoCube;
     std::vector<std::shared_ptr<cg3d::Model>> cyls, axis;
-    bool isAnimating;
-    int nextIndex;
-    void Animate();
+    State state;
+    void CalculateNextSteps();
     int pickedIndex = 0;
     int tipIndex = 0;
     Eigen::VectorXi EMAP;
@@ -41,6 +45,10 @@ private:
     Eigen::VectorXi EQ;
   // If an edge were collapsed, we'd collapse it to these points:
     Eigen::MatrixXd V, C, N, T, points, edges, colors;
+    void AnimateNextStep();
     std::queue<MovementCommand> movements;
+    int nextArmToMove;
+    void StartAnimating();
+    void StopAnimating();
 
 };

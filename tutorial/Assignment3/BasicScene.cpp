@@ -32,7 +32,8 @@
 
 using namespace cg3d;
 
-#define scaleFactor 1.0f
+#define SCALE_FACTOR 1.0f
+#define SINGLE_CYLINDER_SIZE 1.6f
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
@@ -75,19 +76,19 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     axis[0]->lineWidth = 5;
     root->AddChild(axis[0]);
     cyls.push_back( Model::Create("cyl",cylMesh, material));
-    cyls[0]->Scale(scaleFactor,Axis::X);
-    cyls[0]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+    cyls[0]->Scale(SCALE_FACTOR, Axis::X);
+    cyls[0]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
     root->AddChild(cyls[0]);
    
     for(int i = 1;i < 3; i++)
     { 
         cyls.push_back( Model::Create("cyl", cylMesh, material));
-        cyls[i]->Scale(scaleFactor,Axis::X);   
-        cyls[i]->Translate(1.6f*scaleFactor,Axis::X);
-        cyls[i]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
+        cyls[i]->Scale(SCALE_FACTOR, Axis::X);
+        cyls[i]->Translate(1.6f * SCALE_FACTOR, Axis::X);
+        cyls[i]->SetCenter(Eigen::Vector3f(-SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0));
         cyls[i-1]->AddChild(cyls[i]);
     }
-    cyls[0]->Translate({0.8f*scaleFactor,0,0});
+    cyls[0]->Translate({SINGLE_CYLINDER_SIZE * SCALE_FACTOR / 2.0f, 0, 0});
     auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
       return model->meshIndex;//(model->GetMeshList())[0]->data.size()-1;
     };
@@ -97,6 +98,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     sphere1->showWireframe = true;
     autoCube->Translate({-6,0,0});
     autoCube->Scale(1.5f);
+    state = STATIC;
 //    sphere1->Translate({-2,0,0});
 
 
@@ -124,16 +126,15 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     igl::edge_flaps(F,E,EMAP,EF,EI);
     std::cout<< "vertices: \n" << V <<std::endl;
     std::cout<< "faces: \n" << F <<std::endl;
-    
+
     std::cout<< "edges: \n" << E.transpose() <<std::endl;
     std::cout<< "edges to faces: \n" << EF.transpose() <<std::endl;
     std::cout<< "faces to edges: \n "<< EMAP.transpose()<<std::endl;
     std::cout<< "edges indices: \n" << EI.transpose() <<std::endl;
 
-    isAnimating = false;
 
-    RotateSlowly(cyls[0], Eigen::Vector3f(1, 1 ,1), 0.8);
-
+    //RotateSlowly(cyls[0], Eigen::Vector3f(1, 1 ,1), 0.8);
+    nextArmToMove = cyls.size()-1;
 
 }
 
@@ -147,19 +148,43 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 //    cyl->Rotate(0.001f, Axis::Y);
     cube->Rotate(0.1f, Axis::XYZ);
-    Animate();
+    if(state != ANIMATING) return;
+    if(movements.empty()) {
+        CalculateNextSteps();
+    } else {
+        AnimateNextStep();
+    }
 }
 
-void BasicScene::Animate() {
-    if(movements.empty()) {
+#define MIN_DISTANCE_FOR_MOVEMENT 0.05f
+void BasicScene::CalculateNextSteps() {
+    Eigen::Vector3f l(1.6f,0,0);
+    Eigen::Vector3f E = GetCylinderPos(cyls.size()-1);
+    Eigen::Vector3f D = sphere1->GetRotation()*sphere1->GetTranslation();
+    float absDistance = (D - E).norm();
+    if(absDistance > SINGLE_CYLINDER_SIZE * cyls.size()) {
+        std::cout << "Too far! distance is: " << absDistance << std::endl;
+        StopAnimating();
         return;
     }
-    MovementCommand nextCommand = movements.front();
-    if(movements.empty()) {
+    if(absDistance < MIN_DISTANCE_FOR_MOVEMENT){
+        std::cout << "Done!" << std::endl;
+        StopAnimating();
         return;
     }
-    movements.pop();
-    nextCommand.model->Rotate(nextCommand.angle, nextCommand.axis);
+
+    Eigen::Vector3f R;
+    if(nextArmToMove == 0) {
+        R = Eigen::Vector3f::Zero();
+    } else {
+        R = GetCylinderPos(nextArmToMove - 1);
+    }
+    Eigen::Vector3f RD = D - R;
+    Eigen::Vector3f RE = E - R;
+    Eigen::Vector3f normal = RE.cross(RD);
+    float rotationAngle = acos(RD.dot(RE) / (RD.norm() * RE.norm()));
+    RotateSlowly(cyls[nextArmToMove], normal, rotationAngle);
+    nextArmToMove = nextArmToMove == 0 ? cyls.size() - 1 : nextArmToMove - 1;
 }
 
 
@@ -255,6 +280,9 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
+            case GLFW_KEY_SPACE:
+                ChangeAnimationState();
+                break;
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
@@ -317,7 +345,7 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
             case GLFW_KEY_5:
                 for(int i=0; i<cyls.size(); i++) {
-                    auto pos = GetSpherePos(i);
+                    auto pos = GetCylinderPos(i);
                     std::cout << pos[0] << "," << pos[1] << "," << std::endl;
                 }
                 break;
@@ -328,17 +356,20 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
 Eigen::Vector3f BasicScene::GetSpherePos()
 {
-      Eigen::Vector3f l = Eigen::Vector3f(1.6f,0,0);
+      Eigen::Vector3f l = Eigen::Vector3f(SINGLE_CYLINDER_SIZE, 0, 0);
       Eigen::Vector3f res;
       res = cyls[tipIndex % cyls.size()]->GetRotation()*l;
       return res;
 }
 
-Eigen::Vector3f BasicScene::GetSpherePos(int index) {
-    Eigen::Vector3f l = Eigen::Vector3f(1.6f,0,0);
-    Eigen::Vector3f res;
-    res = cyls[index]->GetRotation()*l;
-    return res;
+Eigen::Vector3f BasicScene::GetCylinderPos(int cylIndex) {
+    Eigen::Vector3f l = Eigen::Vector3f(SINGLE_CYLINDER_SIZE, 0, 0);
+    std::vector<std::shared_ptr<Model>> relevantCyls(cyls.begin(), cyls.begin() + cylIndex);
+    Eigen::Vector3f result = Eigen::Vector3f::Zero();
+    for(int i=0; i<=cylIndex; i++) {
+        result += cyls[i]->GetRotation() * l;
+    }
+    return result;
 }
 
 
@@ -351,8 +382,25 @@ void BasicScene::RotateSlowly(std::shared_ptr<cg3d::Model> model, Eigen::Vector3
     }
 }
 
-void BasicScene::SetupAnimation() {
-    int nextIndex = cyls.size() - 1;
 
+void BasicScene::AnimateNextStep() {
+    if(movements.empty()) {
+        return;
+    }
+    MovementCommand nextCommand = movements.front();
+    if(movements.empty()) {
+        return;
+    }
+    movements.pop();
+    nextCommand.model->Rotate(nextCommand.angle, nextCommand.axis);
 }
+
+void BasicScene::StartAnimating() { state = ANIMATING; }
+void BasicScene::StopAnimating() { state = STATIC; }
+
+void BasicScene::ChangeAnimationState() {
+    if(state == STATIC) StartAnimating();
+    else StopAnimating();
+}
+
 
