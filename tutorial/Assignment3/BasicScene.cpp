@@ -35,7 +35,7 @@ using namespace cg3d;
 #define RADIANS_IN_DEGREE 0.0174533f
 
 #define DRAW_AXIS false
-#define SPHERE_SCALE_FACTOR 0.8f
+#define SPHERE_SCALE_FACTOR 1.0f
 #define CYLS_SCALE_FACTOR 0.5f
 #define SINGLE_CYLINDER_SIZE 1.6f
 #define MIN_DISTANCE_FOR_MOVEMENT 0.05f
