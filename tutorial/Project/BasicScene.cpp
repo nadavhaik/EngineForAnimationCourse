@@ -54,11 +54,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 //    SetNamedObject(cube, Model::Create, Mesh::Cube(), material, shared_from_this());
  
     material->AddTexture(0, "textures/box0.bmp", 2);
-    auto sphereMesh{IglLoader::MeshFromFiles("sphere_igl", "data/sphere.obj")};
-    auto cylMesh{IglLoader::MeshFromFiles("cyl_igl","data/xcylinder.obj")};
-    auto cubeMesh{IglLoader::MeshFromFiles("cube_igl","data/cube_old.obj")};
-    sphere1 = Model::Create( "sphere",sphereMesh, material);    
-    cube = Model::Create( "cube", cubeMesh, material);
+
+    auto snakeMesh{IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+    auto snakeRoot = Model::Create( "snake",snakeMesh, material);
+    root->AddChild(snakeRoot);
+
+    snakeNodes.push_back(snakeRoot);
     
     //Axis
     Eigen::MatrixXd vertices(6,3);
@@ -68,67 +69,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
-    axis.push_back(Model::Create("axis",coordsys,material1));
-    axis[0]->mode = 1;
-    axis[0]->Scale(4,Axis::XYZ);
-    axis[0]->lineWidth = 5;
-    root->AddChild(axis[0]);
-    float scaleFactor = 1; 
-    cyls.push_back( Model::Create("cyl",cylMesh, material));
-    cyls[0]->Scale(scaleFactor,Axis::X);
-    cyls[0]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
-    root->AddChild(cyls[0]);
-   
-    for(int i = 1;i < 3; i++)
-    { 
-        cyls.push_back( Model::Create("cyl", cylMesh, material));
-        cyls[i]->Scale(scaleFactor,Axis::X);   
-        cyls[i]->Translate(1.6f*scaleFactor,Axis::X);
-        cyls[i]->SetCenter(Eigen::Vector3f(-0.8f*scaleFactor,0,0));
-        cyls[i-1]->AddChild(cyls[i]);
-    }
-    cyls[0]->Translate({0.8f*scaleFactor,0,0});
 
-    auto morphFunc = [](Model* model, cg3d::Visitor* visitor) {
-      return model->meshIndex;//(model->GetMeshList())[0]->data.size()-1;
-    };
-    autoCube = AutoMorphingModel::Create(*cube, morphFunc);
 
-  
-    sphere1->showWireframe = true;
-    autoCube->Translate({-6,0,0});
-    autoCube->Scale(1.5f);
-//    sphere1->Translate({-2,0,0});
 
-    autoCube->showWireframe = true;
-    camera->Translate(22, Axis::Z);
-    root->AddChild(sphere1);
-//    root->AddChild(cyl);
-    root->AddChild(autoCube);
-    // points = Eigen::MatrixXd::Ones(1,3);
-    // edges = Eigen::MatrixXd::Ones(1,3);
-    // colors = Eigen::MatrixXd::Ones(1,3);
-    
-    // cyl->AddOverlay({points,edges,colors},true);
-    cube->mode =1   ; 
-    auto mesh = cube->GetMeshList();
 
-    //autoCube->AddOverlay(points,edges,colors);
-    // mesh[0]->data.push_back({V,F,V,E});
-    int num_collapsed;
 
-  // Function to reset original mesh and data structures
-    V = mesh[0]->data[0].vertices;
-    F = mesh[0]->data[0].faces;
-   // igl::read_triangle_mesh("data/cube.off",V,F);
-    igl::edge_flaps(F,E,EMAP,EF,EI);
-    std::cout<< "vertices: \n" << V <<std::endl;
-    std::cout<< "faces: \n" << F <<std::endl;
-    
-    std::cout<< "edges: \n" << E.transpose() <<std::endl;
-    std::cout<< "edges to faces: \n" << EF.transpose() <<std::endl;
-    std::cout<< "faces to edges: \n "<< EMAP.transpose()<<std::endl;
-    std::cout<< "edges indices: \n" << EI.transpose() <<std::endl;
+
 
 }
 
@@ -141,7 +87,6 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform1f("specular_exponent", 5.0f);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 //    cyl->Rotate(0.001f, Axis::Y);
-    cube->Rotate(0.1f, Axis::XYZ);
 }
 
 void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int action, int mods, int buttonState[])
@@ -179,7 +124,7 @@ void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int
 void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, int yoffset, bool dragging, int buttonState[])
 {
     // note: there's a (small) chance the button state here precedes the mouse press/release event
-    auto system = camera->GetRotation().transpose();
+    Eigen::Matrix3f system = camera->GetRotation().transpose();
     if (pickedModel) {
         pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
         pickedToutAtPress = pickedModel->GetTout();
@@ -192,7 +137,7 @@ void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, i
 void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool dragging, int* buttonState)
 {
     if (dragging) {
-        auto system = camera->GetRotation().transpose() * GetRotation();
+        Eigen::Matrix3f system = camera->GetRotation().transpose() * GetRotation();
         auto moveCoeff = camera->CalcMoveCoeff(pickedModelDepth, viewport->width);
         auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
         if (pickedModel) {
@@ -223,7 +168,7 @@ void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool draggi
 
 void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods)
 {
-    auto system = camera->GetRotation().transpose();
+    Eigen::Matrix3f system = camera->GetRotation().transpose();
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
@@ -232,16 +177,12 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
             case GLFW_KEY_UP:
-                cyls[pickedIndex]->RotateInSystem(system, 0.1f, Axis::X);
                 break;
             case GLFW_KEY_DOWN:
-                cyls[pickedIndex]->RotateInSystem(system, -0.1f, Axis::X);
                 break;
             case GLFW_KEY_LEFT:
-                cyls[pickedIndex]->RotateInSystem(system, 0.1f, Axis::Y);
                 break;
             case GLFW_KEY_RIGHT:
-                cyls[pickedIndex]->RotateInSystem(system, -0.1f, Axis::Y);
                 break;
             case GLFW_KEY_W:
                 camera->TranslateInSystem(system, {0, 0.1f, 0});
@@ -266,35 +207,19 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                   pickedIndex--;
                 break;
             case GLFW_KEY_2:
-                if(pickedIndex < cyls.size()-1)
-                    pickedIndex++;
+
                 break;
             case GLFW_KEY_3:
                 if( tipIndex >= 0)
                 {
-                  if(tipIndex == cyls.size())
-                    tipIndex--;
-                  sphere1->Translate(GetSpherePos());
+
                   tipIndex--;
                 }
                 break;
             case GLFW_KEY_4:
-                if(tipIndex < cyls.size())
-                {
-                    if(tipIndex < 0)
-                      tipIndex++;
-                    sphere1->Translate(GetSpherePos());
-                    tipIndex++;
-                }
+
                 break;
         }
     }
 }
 
-Eigen::Vector3f BasicScene::GetSpherePos()
-{
-      Eigen::Vector3f l = Eigen::Vector3f(1.6f,0,0);
-      Eigen::Vector3f res;
-      res = cyls[tipIndex]->GetRotation()*l;   
-      return res;  
-}
