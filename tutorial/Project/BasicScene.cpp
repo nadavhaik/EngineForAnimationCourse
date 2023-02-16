@@ -57,6 +57,8 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
     auto snakeMesh{IglLoader::MeshFromFiles("snake","data/snake2.obj")};
     auto snakeRoot = Model::Create( "snake",snakeMesh, material);
+    snakeRoot->Rotate(1.5708, Axis::Y);
+    snakeRoot->Translate(-10, Axis::Z);
     root->AddChild(snakeRoot);
 
     snakeNodes.push_back(snakeRoot);
