@@ -1,0 +1,381 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "tutorial",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						5,
+						6,
+						7,
+						8
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-tutorial-Debug-c98274e39813cf5a9283.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "tutorial",
+					"targetIndexes" : 
+					[
+						2,
+						5,
+						6,
+						7,
+						8,
+						9,
+						12
+					]
+				},
+				{
+					"build" : "tutorial/glad",
+					"jsonFile" : "directory-tutorial.glad-Debug-ab91aeff978cb067f799.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "external/glad",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "tutorial/glfw",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-tutorial.glfw-Debug-fd01c040983e4c090029.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 3,
+					"source" : "external/glfw"
+				},
+				{
+					"build" : "tutorial/glfw/src",
+					"jsonFile" : "directory-tutorial.glfw.src-Debug-2567b11adc78fab644b7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 3,
+					"source" : "external/glfw/src",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "tutorial/imgui",
+					"jsonFile" : "directory-tutorial.imgui-Debug-4f32816f0e811fdb14ad.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 4,
+					"source" : "external/libigl-imgui",
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"build" : "tutorial/stb_image",
+					"jsonFile" : "directory-tutorial.stb_image-Debug-661c5a37062e17f8566e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 5,
+					"source" : "external/stb",
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"build" : "tutorial/Demo",
+					"jsonFile" : "directory-tutorial.Demo-Debug-8c40a782ec9b7db48637.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 6,
+					"source" : "tutorial/Demo",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "tutorial/Example1",
+					"jsonFile" : "directory-tutorial.Example1-Debug-f6c986bfaa13b63ae5e3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 7,
+					"source" : "tutorial/Example1",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "EngineRework"
+				},
+				{
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					],
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "engine",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2,
+						5,
+						6,
+						7,
+						8,
+						9,
+						12
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "glad",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3,
+						4
+					],
+					"name" : "GLFW",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5
+					],
+					"name" : "libigl_tutorials",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6
+					],
+					"name" : "igl_stb_image",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						7
+					],
+					"name" : "Demo",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						8
+					],
+					"name" : "Example1",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 7,
+					"id" : "Demo_bin::@b84a7e62aaa56bc9ddb0",
+					"jsonFile" : "target-Demo_bin-Debug-c659286050fc4c508c9d.json",
+					"name" : "Demo_bin",
+					"projectIndex" : 6
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "Example1_bin::@1930093ee6a303135cc9",
+					"jsonFile" : "target-Example1_bin-Debug-1cb2965e9ac19edc4d3f.json",
+					"name" : "Example1_bin",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "engine::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-engine-Debug-b257b7a6867dfe36ee15.json",
+					"name" : "engine",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "glad::@31b0de05321e70262faa",
+					"jsonFile" : "target-glad-Debug-4e899d91282694ff2779.json",
+					"name" : "glad",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "glfw::@9e2667ebb8db4a0553eb",
+					"jsonFile" : "target-glfw-Debug-095ddd91f893319c3336.json",
+					"name" : "glfw",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "igl::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-igl-Debug-64833f840aea9fd4cce0.json",
+					"name" : "igl",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "igl_opengl::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-igl_opengl-Debug-761ef9446d0634c8b619.json",
+					"name" : "igl_opengl",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "igl_opengl_glfw::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-igl_opengl_glfw-Debug-249065cdb3147ebed462.json",
+					"name" : "igl_opengl_glfw",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "igl_opengl_glfw_imgui::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-igl_opengl_glfw_imgui-Debug-3a0989d692d6097603a5.json",
+					"name" : "igl_opengl_glfw_imgui",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "igl_png::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-igl_png-Debug-f8994d56bd844bc2685e.json",
+					"name" : "igl_png",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "igl_stb_image::@467d754f64c594be0b07",
+					"jsonFile" : "target-igl_stb_image-Debug-d6fc2e60bda44eb8e84f.json",
+					"name" : "igl_stb_image",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "imgui::@5dae878ba146e2cc98c7",
+					"jsonFile" : "target-imgui-Debug-1f163f72f99cb3dc72bc.json",
+					"name" : "imgui",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "imguizmo::@ec9a7ed51d40c8c506b6",
+					"jsonFile" : "target-imguizmo-Debug-d484fdc8feb16a16ee28.json",
+					"name" : "imguizmo",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/CazeMattan/University/3rd_year/5th_semester/Animation/cmake-build-debug",
+		"source" : "C:/CazeMattan/University/3rd_year/5th_semester/Animation"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

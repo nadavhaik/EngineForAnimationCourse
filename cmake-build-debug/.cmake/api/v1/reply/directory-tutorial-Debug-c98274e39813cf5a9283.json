@@ -1,0 +1,105 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"include"
+		],
+		"files" : 
+		[
+			"cmake/libigl.cmake",
+			"tutorial/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 9,
+				"parent" : 0
+			},
+			{
+				"file" : 0,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 357,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 386,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 397,
+				"parent" : 2
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"igl.lib"
+			],
+			"targetId" : "igl::@ec9a7ed51d40c8c506b6",
+			"targetIndex" : 5,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "share/libigl/cmake",
+			"paths" : 
+			[
+				"cmake-build-debug/libigl-config.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 5,
+			"component" : "Unspecified",
+			"destination" : "share/libigl/cmake",
+			"exportName" : "igl-export",
+			"exportTargets" : 
+			[
+				{
+					"id" : "igl::@ec9a7ed51d40c8c506b6",
+					"index" : 5
+				},
+				{
+					"id" : "igl_common::@ec9a7ed51d40c8c506b6",
+					"index" : 0
+				},
+				{
+					"id" : "igl_eigen::@ec9a7ed51d40c8c506b6",
+					"index" : 0
+				}
+			],
+			"paths" : 
+			[
+				"tutorial/CMakeFiles/Export/share/libigl/cmake/libigl-export.cmake"
+			],
+			"type" : "export"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "tutorial",
+		"source" : "tutorial"
+	}
+}
