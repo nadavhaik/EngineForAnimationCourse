@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/CMakeFiles/eigen-download"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/CMakeFiles/eigen-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/CMakeFiles/eigen-download-complete.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-build.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-configure.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-install.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-mkdir.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-patch.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-test.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/eigen/eigen-download-prefix/src/eigen-download-stamp/eigen-download-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"eigen-download"
+		],
+		"name" : "eigen-download"
+	}
+}

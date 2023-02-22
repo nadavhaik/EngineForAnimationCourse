@@ -1,0 +1,3 @@
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download.dir
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/edit_cache.dir
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/rebuild_cache.dir

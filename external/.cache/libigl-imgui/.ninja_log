@@ -1,0 +1,21 @@
+# ninja log v5
+1	70	6986124411695131	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-mkdir	3e72fa7d3b77262f
+1	70	6986124411695131	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-mkdir	3e72fa7d3b77262f
+71	2541	6986124436407211	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-download	2b466e3871062df2
+71	2541	6986124436407211	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-download	2b466e3871062df2
+2542	2707	0	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-update	5240d81dc4d96212
+2542	2707	0	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-update	5240d81dc4d96212
+2708	2792	6986124438896925	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-patch	77b9306f8ffe01cf
+2708	2792	6986124438896925	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-patch	77b9306f8ffe01cf
+2793	2868	6986124439676925	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-configure	577c0eb3676c915d
+2793	2868	6986124439676925	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-configure	577c0eb3676c915d
+2869	2936	6986124440346930	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-build	790ba9356ac0ab63
+2869	2936	6986124440346930	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-build	790ba9356ac0ab63
+2936	2998	6986124440976953	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-install	532b76a0443165ac
+2936	2998	6986124440976953	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-install	532b76a0443165ac
+2998	3062	6986124441617213	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-test	c87ce002566058be
+2998	3062	6986124441617213	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-test	c87ce002566058be
+3063	3154	6986124442537403	CMakeFiles/libigl-imgui-download-complete	dba8f0a7a90c00d0
+3063	3154	6986124442537403	libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-done	dba8f0a7a90c00d0
+3063	3154	6986124442537403	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/CMakeFiles/libigl-imgui-download-complete	dba8f0a7a90c00d0
+3063	3154	6986124442537403	D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-done	dba8f0a7a90c00d0

@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download-complete.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-build.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-configure.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-install.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-mkdir.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-patch.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-test.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"imguizmo-download"
+		],
+		"name" : "imguizmo-download"
+	}
+}

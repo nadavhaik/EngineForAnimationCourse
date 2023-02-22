@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download-complete.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-build.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-configure.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-install.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-mkdir.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-patch.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-test.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glfw-download"
+		],
+		"name" : "glfw-download"
+	}
+}

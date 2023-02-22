@@ -1,0 +1,14 @@
+# Target labels
+ libigl-imgui-download
+# Source files and their labels
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/CMakeFiles/libigl-imgui-download
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/CMakeFiles/libigl-imgui-download.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/CMakeFiles/libigl-imgui-download-complete.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-build.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-configure.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-download.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-install.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-mkdir.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-patch.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-test.rule
+D:/3D animation/project/new/project-main/external/.cache/libigl-imgui/libigl-imgui-download-prefix/src/libigl-imgui-download-stamp/libigl-imgui-download-update.rule

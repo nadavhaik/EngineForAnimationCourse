@@ -1,0 +1,14 @@
+# Target labels
+ imgui-download
+# Source files and their labels
+D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download
+D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download-complete.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-build.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-configure.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-download.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-install.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-mkdir.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-patch.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-test.rule
+D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-update.rule

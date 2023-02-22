@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download-complete.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-build.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-configure.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-download.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-install.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-mkdir.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-patch.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-test.rule"
+		},
+		{
+			"file" : "D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"imgui-download"
+		],
+		"name" : "imgui-download"
+	}
+}

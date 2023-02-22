@@ -1,0 +1,21 @@
+# ninja log v5
+1	72	6986123973464461	glfw-download-prefix/src/glfw-download-stamp/glfw-download-mkdir	9e3b9a9fb243cc2f
+1	72	6986123973464461	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-mkdir	9e3b9a9fb243cc2f
+73	6079	6986124033547780	glfw-download-prefix/src/glfw-download-stamp/glfw-download-download	e79c52abdc09a1c5
+73	6079	6986124033547780	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-download	e79c52abdc09a1c5
+6080	6231	0	glfw-download-prefix/src/glfw-download-stamp/glfw-download-update	f938740ad8c64fb3
+6080	6231	0	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-update	f938740ad8c64fb3
+6232	6303	6986124035777921	glfw-download-prefix/src/glfw-download-stamp/glfw-download-patch	703146e59e91b56f
+6232	6303	6986124035777921	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-patch	703146e59e91b56f
+6303	6370	6986124036447786	glfw-download-prefix/src/glfw-download-stamp/glfw-download-configure	1fe55f6f72578dc0
+6303	6370	6986124036447786	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-configure	1fe55f6f72578dc0
+6371	6439	6986124037137774	glfw-download-prefix/src/glfw-download-stamp/glfw-download-build	e765d7a9a453a40e
+6371	6439	6986124037137774	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-build	e765d7a9a453a40e
+6439	6507	6986124037827780	glfw-download-prefix/src/glfw-download-stamp/glfw-download-install	af7df64186dcd8ef
+6439	6507	6986124037827780	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-install	af7df64186dcd8ef
+6508	6575	6986124038497776	glfw-download-prefix/src/glfw-download-stamp/glfw-download-test	b85492f36635f5f0
+6508	6575	6986124038497776	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-test	b85492f36635f5f0
+6575	6670	6986124039457776	CMakeFiles/glfw-download-complete	34afeed0ebbca7dd
+6575	6670	6986124039457776	glfw-download-prefix/src/glfw-download-stamp/glfw-download-done	34afeed0ebbca7dd
+6575	6670	6986124039457776	D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download-complete	34afeed0ebbca7dd
+6575	6670	6986124039457776	D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-done	34afeed0ebbca7dd

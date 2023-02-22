@@ -1,0 +1,14 @@
+# Target labels
+ glfw-download
+# Source files and their labels
+D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download
+D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/CMakeFiles/glfw-download-complete.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-build.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-configure.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-download.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-install.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-mkdir.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-patch.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-test.rule
+D:/3D animation/project/new/project-main/external/.cache/glfw/glfw-download-prefix/src/glfw-download-stamp/glfw-download-update.rule

@@ -1,0 +1,21 @@
+# ninja log v5
+1	71	6986124446777234	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-mkdir	24f42d092e4f74ea
+1	71	6986124446777234	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-mkdir	24f42d092e4f74ea
+72	4265	6986124488712627	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-download	6ac2b7a2bcbbeeac
+72	4265	6986124488712627	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-download	6ac2b7a2bcbbeeac
+4265	4425	0	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-update	60d270ae6094fa73
+4265	4425	0	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-update	60d270ae6094fa73
+4426	4493	6986124490982790	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-patch	84d21cf9dd492dab
+4426	4493	6986124490982790	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-patch	84d21cf9dd492dab
+4493	4561	6986124491672966	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-configure	f86a307475bfebe2
+4493	4561	6986124491672966	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-configure	f86a307475bfebe2
+4562	4629	6986124492342629	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-build	30672bd6b462c6ad
+4562	4629	6986124492342629	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-build	30672bd6b462c6ad
+4629	4705	6986124493102639	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-install	217973a72f899047
+4629	4705	6986124493102639	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-install	217973a72f899047
+4706	4780	6986124493862646	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-test	8140101aaa61d063
+4706	4780	6986124493862646	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-test	8140101aaa61d063
+4780	4866	6986124494722630	CMakeFiles/imguizmo-download-complete	9bfd3af59ae063ba
+4780	4866	6986124494722630	imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-done	9bfd3af59ae063ba
+4780	4866	6986124494722630	D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download-complete	9bfd3af59ae063ba
+4780	4866	6986124494722630	D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-done	9bfd3af59ae063ba

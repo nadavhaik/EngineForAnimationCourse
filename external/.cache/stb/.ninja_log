@@ -1,0 +1,21 @@
+# ninja log v5
+0	71	6986124499022838	stb-download-prefix/src/stb-download-stamp/stb-download-mkdir	ca72948bc57cc5ea
+0	71	6986124499022838	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-mkdir	ca72948bc57cc5ea
+72	2543	6986124523728278	stb-download-prefix/src/stb-download-stamp/stb-download-download	58cb614e95a4fadb
+72	2543	6986124523728278	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-download	58cb614e95a4fadb
+2543	2715	0	stb-download-prefix/src/stb-download-stamp/stb-download-update	6a5de6158e06f9d3
+2543	2715	0	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-update	6a5de6158e06f9d3
+2716	2782	6986124526128425	stb-download-prefix/src/stb-download-stamp/stb-download-patch	50770cd26cc538d5
+2716	2782	6986124526128425	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-patch	50770cd26cc538d5
+2782	2845	6986124526758266	stb-download-prefix/src/stb-download-stamp/stb-download-configure	a9f6ac8440e6b84d
+2782	2845	6986124526758266	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-configure	a9f6ac8440e6b84d
+2845	2910	6986124527408266	stb-download-prefix/src/stb-download-stamp/stb-download-build	92a0b7401f649530
+2845	2910	6986124527408266	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-build	92a0b7401f649530
+2910	2976	6986124528068270	stb-download-prefix/src/stb-download-stamp/stb-download-install	d5ad2e795639cbcf
+2910	2976	6986124528068270	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-install	d5ad2e795639cbcf
+2976	3044	6986124528758271	stb-download-prefix/src/stb-download-stamp/stb-download-test	c8da3a5e515c3b2a
+2976	3044	6986124528758271	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-test	c8da3a5e515c3b2a
+3044	3136	6986124529668267	CMakeFiles/stb-download-complete	3d49fcdb0fdc8d29
+3044	3136	6986124529668267	stb-download-prefix/src/stb-download-stamp/stb-download-done	3d49fcdb0fdc8d29
+3044	3136	6986124529668267	D:/3D animation/project/new/project-main/external/.cache/stb/CMakeFiles/stb-download-complete	3d49fcdb0fdc8d29
+3044	3136	6986124529668267	D:/3D animation/project/new/project-main/external/.cache/stb/stb-download-prefix/src/stb-download-stamp/stb-download-done	3d49fcdb0fdc8d29

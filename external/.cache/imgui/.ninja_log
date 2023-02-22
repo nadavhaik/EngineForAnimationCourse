@@ -1,0 +1,21 @@
+# ninja log v5
+1	71	6986124045954560	imgui-download-prefix/src/imgui-download-stamp/imgui-download-mkdir	c112486431a68855
+1	71	6986124045954560	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-mkdir	c112486431a68855
+72	35608	6986124401315432	imgui-download-prefix/src/imgui-download-stamp/imgui-download-download	d11d0518b72426c7
+72	35608	6986124401315432	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-download	d11d0518b72426c7
+35608	35766	0	imgui-download-prefix/src/imgui-download-stamp/imgui-download-update	dda38e10f1fb48ba
+35608	35766	0	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-update	dda38e10f1fb48ba
+35767	35834	6986124403575797	imgui-download-prefix/src/imgui-download-stamp/imgui-download-patch	c652c5e38e382d44
+35767	35834	6986124403575797	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-patch	c652c5e38e382d44
+35834	35901	6986124404255767	imgui-download-prefix/src/imgui-download-stamp/imgui-download-configure	11c47ccbaecb7858
+35834	35901	6986124404255767	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-configure	11c47ccbaecb7858
+35901	35968	6986124404916108	imgui-download-prefix/src/imgui-download-stamp/imgui-download-build	ac945511e765f858
+35901	35968	6986124404916108	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-build	ac945511e765f858
+35968	36036	6986124405595796	imgui-download-prefix/src/imgui-download-stamp/imgui-download-install	334b6484e90a0c96
+35968	36036	6986124405595796	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-install	334b6484e90a0c96
+36036	36105	6986124406285817	imgui-download-prefix/src/imgui-download-stamp/imgui-download-test	ba3ae66367572bc7
+36036	36105	6986124406285817	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-test	ba3ae66367572bc7
+36106	36200	6986124407244811	CMakeFiles/imgui-download-complete	f62c0ea972c0079f
+36106	36200	6986124407244811	imgui-download-prefix/src/imgui-download-stamp/imgui-download-done	f62c0ea972c0079f
+36106	36200	6986124407244811	D:/3D animation/project/new/project-main/external/.cache/imgui/CMakeFiles/imgui-download-complete	f62c0ea972c0079f
+36106	36200	6986124407244811	D:/3D animation/project/new/project-main/external/.cache/imgui/imgui-download-prefix/src/imgui-download-stamp/imgui-download-done	f62c0ea972c0079f

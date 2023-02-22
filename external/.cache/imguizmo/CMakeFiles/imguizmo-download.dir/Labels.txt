@@ -1,0 +1,14 @@
+# Target labels
+ imguizmo-download
+# Source files and their labels
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/CMakeFiles/imguizmo-download-complete.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-build.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-configure.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-download.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-install.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-mkdir.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-patch.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-test.rule
+D:/3D animation/project/new/project-main/external/.cache/imguizmo/imguizmo-download-prefix/src/imguizmo-download-stamp/imguizmo-download-update.rule
