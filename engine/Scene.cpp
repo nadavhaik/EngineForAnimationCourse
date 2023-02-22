@@ -105,46 +105,46 @@ void Scene::CursorPosCallback(Viewport* viewport, int x, int y, bool dragging, i
 
 void Scene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods)
 {
-    Eigen::Matrix3f system = camera->GetRotation().transpose();
-
-    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
-        switch (key) // NOLINT(hicpp-multiway-paths-covered)
-        {
-            case GLFW_KEY_ESCAPE:
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
-                break;
-            case GLFW_KEY_UP:
-                camera->RotateInSystem(system, 0.1f, Axis::X);
-                break;
-            case GLFW_KEY_DOWN:
-                camera->RotateInSystem(system, -0.1f, Axis::X);
-                break;
-            case GLFW_KEY_LEFT:
-                camera->RotateInSystem(system, 0.1f, Axis::Y);
-                break;
-            case GLFW_KEY_RIGHT:
-                camera->RotateInSystem(system, -0.1f, Axis::Y);
-                break;
-            case GLFW_KEY_W:
-                camera->TranslateInSystem(system, {0, 0.05f, 0});
-                break;
-            case GLFW_KEY_S:
-                camera->TranslateInSystem(system, {0, -0.05f, 0});
-                break;
-            case GLFW_KEY_A:
-                camera->TranslateInSystem(system, {-0.05f, 0, 0});
-                break;
-            case GLFW_KEY_D:
-                camera->TranslateInSystem(system, {0.05f, 0, 0});
-                break;
-            case GLFW_KEY_B:
-                camera->TranslateInSystem(system, {0, 0, 0.05f});
-                break;
-            case GLFW_KEY_F:
-                camera->TranslateInSystem(system, {0, 0, -0.05f});
-                break;
-        }
-    }
+//    Eigen::Matrix3f system = camera->GetRotation().transpose();
+//
+//    if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+//        switch (key) // NOLINT(hicpp-multiway-paths-covered)
+//        {
+//            case GLFW_KEY_ESCAPE:
+//                glfwSetWindowShouldClose(window, GLFW_TRUE);
+//                break;
+//            case GLFW_KEY_UP:
+//                camera->RotateInSystem(system, 0.1f, Axis::X);
+//                break;
+//            case GLFW_KEY_DOWN:
+//                camera->RotateInSystem(system, -0.1f, Axis::X);
+//                break;
+//            case GLFW_KEY_LEFT:
+//                camera->RotateInSystem(system, 0.1f, Axis::Y);
+//                break;
+//            case GLFW_KEY_RIGHT:
+//                camera->RotateInSystem(system, -0.1f, Axis::Y);
+//                break;
+//            case GLFW_KEY_W:
+//                camera->TranslateInSystem(system, {0, 0.05f, 0});
+//                break;
+//            case GLFW_KEY_S:
+//                camera->TranslateInSystem(system, {0, -0.05f, 0});
+//                break;
+//            case GLFW_KEY_A:
+//                camera->TranslateInSystem(system, {-0.05f, 0, 0});
+//                break;
+//            case GLFW_KEY_D:
+//                camera->TranslateInSystem(system, {0.05f, 0, 0});
+//                break;
+//            case GLFW_KEY_B:
+//                camera->TranslateInSystem(system, {0, 0, 0.05f});
+//                break;
+//            case GLFW_KEY_F:
+//                camera->TranslateInSystem(system, {0, 0, -0.05f});
+//                break;
+//        }
+//    }
 }
 
 void Scene::CharCallback(Viewport* viewport, int x, int y, unsigned int codepoint)

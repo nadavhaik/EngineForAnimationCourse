@@ -32,6 +32,8 @@
 
 using namespace cg3d;
 
+
+
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
@@ -49,14 +51,13 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     auto program = std::make_shared<Program>("shaders/phongShader");
     auto program1 = std::make_shared<Program>("shaders/pickingShader");
     
-    auto material{ std::make_shared<Material>("material", program)}; // empty material
-    auto material1{ std::make_shared<Material>("material", program1)}; // empty material
-//    SetNamedObject(cube, Model::Create, Mesh::Cube(), material, shared_from_this());
+     snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
+//    SetNamedObject(cube, Model::Create, Mesh::Cube(), snakeMaterial, shared_from_this());
  
-    material->AddTexture(0, "textures/box0.bmp", 2);
+    snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
 
-    auto snakeMesh{IglLoader::MeshFromFiles("snake","data/snake2.obj")};
-    auto snakeRoot = Model::Create( "snake",snakeMesh, material);
+    snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+    auto snakeRoot = Model::Create("snake", snakeMesh, snakeMaterial);
     snakeRoot->Rotate(1.5708, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
     root->AddChild(snakeRoot);
@@ -72,12 +73,8 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
 
-
-
-
-
-
-
+    executor = std::make_shared<PeriodicExecutor>(PERIODIC_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
+    executor->Start();
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
@@ -89,6 +86,8 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform1f("specular_exponent", 5.0f);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 //    cyl->Rotate(0.001f, Axis::Y);
+
+//    snakeNodes[0]->Translate(0.01f, Axis::Y);
 }
 
 void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int action, int mods, int buttonState[])
@@ -183,8 +182,10 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_DOWN:
                 break;
             case GLFW_KEY_LEFT:
+                TurnLeft();
                 break;
             case GLFW_KEY_RIGHT:
+                TurnRight();
                 break;
             case GLFW_KEY_W:
                 camera->TranslateInSystem(system, {0, 0.1f, 0});
@@ -221,7 +222,48 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_4:
 
                 break;
+            case GLFW_KEY_SPACE:
+                AddToTail();
+                break;
         }
     }
+}
+
+#define MOVEMENT_DISTANCE 0.01f
+
+void BasicScene::PeriodicFunction() {
+    Eigen::Vector3f translation = MOVEMENT_DISTANCE * snakeNodes[0]->GetRotation() * Eigen::Vector3f(0, 0, 1);
+//    snakeNodes[0]->Translate( );
+    snakeNodes[0]->Translate(translation);
+
+}
+
+BasicScene::~BasicScene() {
+    if(executor != nullptr) {
+        executor->Stop();
+    }
+}
+
+void BasicScene::TurnRight() {
+//    snakeHeading -= NINETY_DEGREES_IN_RADIANS;
+    snakeNodes[0]->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+}
+
+void BasicScene::TurnLeft() {
+//    snakeHeading += NINETY_DEGREES_IN_RADIANS;
+    snakeNodes[0]->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+}
+
+void BasicScene::AddToTail() {
+    std::shared_ptr<Mesh> nodeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+
+    auto newNode = Model::Create("node", nodeMesh, snakeMaterial);
+
+    std::shared_ptr<Model> parent = snakeNodes.back();
+
+    parent->AddChild(newNode);
+
+    snakeNodes.push_back(newNode);
+
 }
 
