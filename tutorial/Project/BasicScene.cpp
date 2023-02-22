@@ -237,6 +237,15 @@ void BasicScene::PeriodicFunction() {
         Eigen::Vector3f translation = MOVEMENT_DISTANCE * node->GetRotation() * Eigen::Vector3f(0, 0, 1);
         node->Translate(translation);
     }
+
+    std::shared_ptr<Model> head = snakeNodes.front();
+    for(int i=1; i<snakeNodes.size(); i++) {
+        std::shared_ptr<Model> node = snakeNodes[i];
+        if(ModelsCollide(head, node)) {
+            std::cout << "Collusion!!!" << std::endl;
+        }
+    }
+
 }
 
 BasicScene::~BasicScene() {
@@ -274,5 +283,47 @@ void BasicScene::AddToTail() {
 
     snakeNodes.push_back(newNode);
     headings.push_back(heading);
+}
+
+Eigen::AlignedBox<float, 3> BasicScene::BoxOfModel(std::shared_ptr<cg3d::Model> model) {
+    std::vector<Eigen::Vector3f> fixedVertices;
+    for(auto meshList : model->GetMeshList()) {
+        for (auto meshData: meshList->data) {
+            Eigen::MatrixXd vertices = meshData.vertices;
+            for(int i=0; i<vertices.rows(); i++) {
+                Eigen::Vector4d vertex4d(vertices(i,0), vertices(i, 1), vertices(i, 2), 1);
+                Eigen::Vector4d fixed4d = model->GetTransform().cast<double>() * vertex4d;
+                Eigen::Vector3d fixed(fixed4d.x(), fixed4d.y(), fixed4d.z());
+                fixedVertices.emplace_back(fixed.cast<float>());
+            }
+
+        }
+    }
+
+    Eigen::Vector3f minCorner(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+    Eigen::Vector3f maxCorner(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+
+    for(Eigen::Vector3f vertex : fixedVertices) {
+        minCorner.x() = std::min(minCorner.x(), vertex.x());
+        minCorner.y() = std::min(minCorner.y(), vertex.y());
+        minCorner.z() = std::min(minCorner.z(), vertex.z());
+
+        maxCorner.x() = std::max(maxCorner.x(), vertex.x());
+        maxCorner.y() = std::max(maxCorner.y(), vertex.y());
+        maxCorner.z() = std::max(maxCorner.z(), vertex.z());
+    }
+
+
+    Eigen::AlignedBox<float, 3> box(minCorner, maxCorner);
+
+    return box;
+}
+
+#define AlignedBox3f Eigen::AlignedBox<float, 3>
+bool BasicScene::ModelsCollide(std::shared_ptr<cg3d::Model> m1, std::shared_ptr<cg3d::Model> m2) {
+    AlignedBox3f b1 = BoxOfModel(m1);
+    AlignedBox3f b2 = BoxOfModel(m2);
+
+    return b1.intersects(b2);
 }
 

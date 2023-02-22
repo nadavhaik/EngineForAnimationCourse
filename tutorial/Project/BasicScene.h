@@ -28,6 +28,8 @@ public:
     void TurnRight();
     void TurnLeft();
     void AddToTail();
+    static Eigen::AlignedBox<float, 3> BoxOfModel(std::shared_ptr<cg3d::Model> model);
+    static bool ModelsCollide(std::shared_ptr<cg3d::Model> m1, std::shared_ptr<cg3d::Model> m2);
 private:
     std::shared_ptr<Movable> root;
     std::vector<std::shared_ptr<cg3d::Model>> snakeNodes;
