@@ -8,6 +8,7 @@
 #define PERIODIC_INTERVAL_MILLIS 20
 #define NINETY_DEGREES_IN_RADIANS 1.57079633f
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
+#define NODE_HEIGHT 1.5f
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
@@ -40,5 +41,6 @@ private:
     std::shared_ptr<PeriodicExecutor> executor;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
-    float snakeHeading = NINETY_DEGREES_IN_RADIANS;
+    std::vector<float> headings;
+    float headHeading = NINETY_DEGREES_IN_RADIANS;
 };

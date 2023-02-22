@@ -63,6 +63,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     root->AddChild(snakeRoot);
 
     snakeNodes.push_back(snakeRoot);
+    headings.push_back(0);
     
     //Axis
     Eigen::MatrixXd vertices(6,3);
@@ -232,10 +233,10 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 #define MOVEMENT_DISTANCE 0.01f
 
 void BasicScene::PeriodicFunction() {
-    Eigen::Vector3f translation = MOVEMENT_DISTANCE * snakeNodes[0]->GetRotation() * Eigen::Vector3f(0, 0, 1);
-//    snakeNodes[0]->Translate( );
-    snakeNodes[0]->Translate(translation);
-
+    for(auto &node : snakeNodes) {
+        Eigen::Vector3f translation = MOVEMENT_DISTANCE * node->GetRotation() * Eigen::Vector3f(0, 0, 1);
+        node->Translate(translation);
+    }
 }
 
 BasicScene::~BasicScene() {
@@ -245,25 +246,33 @@ BasicScene::~BasicScene() {
 }
 
 void BasicScene::TurnRight() {
-//    snakeHeading -= NINETY_DEGREES_IN_RADIANS;
+//    headHeading -= NINETY_DEGREES_IN_RADIANS;
     snakeNodes[0]->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    headings[0] += SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::TurnLeft() {
-//    snakeHeading += NINETY_DEGREES_IN_RADIANS;
+//    headHeading += NINETY_DEGREES_IN_RADIANS;
     snakeNodes[0]->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    headings[0] -= SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::AddToTail() {
-    std::shared_ptr<Mesh> nodeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
 
-    auto newNode = Model::Create("node", nodeMesh, snakeMaterial);
+    auto newNode = Model::Create("node", snakeMesh, snakeMaterial);
 
     std::shared_ptr<Model> parent = snakeNodes.back();
+    root->AddChild(newNode);
+    newNode->Rotate(parent->GetRotation());
+    newNode->Translate(parent->GetTranslation());
+    double heading = headings.back();
 
-    parent->AddChild(newNode);
+    float xTrans = cos(heading);
+    float yTrans = sin(heading);
+
+    newNode->Translate( NODE_HEIGHT * Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back(newNode);
-
+    headings.push_back(heading);
 }
 
