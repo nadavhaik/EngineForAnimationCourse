@@ -305,7 +305,7 @@ void BasicScene::AddToTail() {
     float yTrans = sin(heading);
 
     Vec3 diag = parent->GetDiag();
-    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
+//    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
     newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back({newNode, (float)heading});
@@ -341,7 +341,6 @@ Vector3f BasicScene::RandomSpawnPoint(){
     float y = ySign * RollRandomAB(0, VerticalBorder);
 
     Vector3f spawnPoint(x, y, 0);
-    cout<<format("spawning apple at: ({} / {}, {} / {})\n", x, HorizontalBorder, y, VerticalBorder)<<endl;
     return spawnPoint;
 }
 

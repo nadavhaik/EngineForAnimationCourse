@@ -48,18 +48,16 @@ public:
     void AddToTail();
     static bool ModelsCollide(BoundablePtr m1, BoundablePtr m2);
     void RegisterPeriodic(int interval, const std::function<void(void)>& func);
-private:
 
     Vector3f RandomSpawnPoint();
     void AddPrize();
 
     float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
     std::shared_ptr<Movable> root;
-    std::vector<SnakeNode> snakeNodes;
 
 
 private:
-    std::vector<std::shared_ptr<cg3d::Model>> snakeNodes;
+    std::vector<SnakeNode> snakeNodes;
     vector<shared_ptr<MovingObject>> movingObjects;
     int pickedIndex = 0;
     int tipIndex = 0;
@@ -70,11 +68,9 @@ private:
     Eigen::MatrixXd V, C, N, T, points,edges,colors;
     std::vector<PeriodicExecutor> executors;
 
-    std::shared_ptr<cg3d::Mesh> snakeMesh;
-    std::shared_ptr<cg3d::Material> snakeMaterial;
     std::shared_ptr<cg3d::Mesh> prizeMesh;
     std::shared_ptr<cg3d::Material> prizeMaterial;
-    std::vector<float> headings;
+    std::shared_ptr<cg3d::Mesh> snakeMesh;
+    std::shared_ptr<cg3d::Material> snakeMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
-
 };

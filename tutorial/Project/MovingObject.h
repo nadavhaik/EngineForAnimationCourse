@@ -11,11 +11,10 @@ enum SnakeType{HEAD, TAIL};
 #include "Eigen/Core"
 #include "Mesh.h"
 #include "AutoMorphingModel.h"
-#include <format>
 
 
-#define HorizontalBorder 1.0f
-#define VerticalBorder 1.0f
+#define HorizontalBorder 9.0f
+#define VerticalBorder 9.0f
 
 
 
