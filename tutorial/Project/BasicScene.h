@@ -2,16 +2,25 @@
 #include "AutoMorphingModel.h"
 #include "Scene.h"
 #include "PeriodicExecutor.h"
+#include "types_macros.h"
 #include <memory>
 #include <utility>
+#include "BoundableModel.h"
 
-#define PERIODIC_INTERVAL_MILLIS 20
+#define UPDATE_INTERVAL_MILLIS 20
+#define COLLUSION_DETECTION_INTERVAL_MILLIS 500
+
 #define NINETY_DEGREES_IN_RADIANS 1.57079633f
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
-#define NODE_HEIGHT 1.5f
+
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
+
+struct SnakeNode {
+    std::shared_ptr<NodeModel> model;
+    float heading{};
+};
 
 class BasicScene : public cg3d::Scene
 {
@@ -28,11 +37,11 @@ public:
     void TurnRight();
     void TurnLeft();
     void AddToTail();
-    static Eigen::AlignedBox<float, 3> BoxOfModel(std::shared_ptr<cg3d::Model> model);
-    static bool ModelsCollide(std::shared_ptr<cg3d::Model> m1, std::shared_ptr<cg3d::Model> m2);
+    static bool ModelsCollide(BoundablePtr m1, BoundablePtr m2);
+    void RegisterPeriodic(int interval, const std::function<void(void)>& func);
 private:
     std::shared_ptr<Movable> root;
-    std::vector<std::shared_ptr<cg3d::Model>> snakeNodes;
+    std::vector<SnakeNode> snakeNodes;
     int pickedIndex = 0;
     int tipIndex = 0;
     Eigen::VectorXi EMAP;
@@ -40,9 +49,9 @@ private:
     Eigen::VectorXi EQ;
     // If an edge were collapsed, we'd collapse it to these points:
     Eigen::MatrixXd V, C, N, T, points,edges,colors;
-    std::shared_ptr<PeriodicExecutor> executor;
+    std::vector<PeriodicExecutor> executors;
+
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
-    std::vector<float> headings;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
 };

@@ -27,6 +27,8 @@
 #include "igl/collapse_edge.h"
 #include "igl/edge_collapse_is_valid.h"
 #include "igl/write_triangle_mesh.h"
+#include "types_macros.h"
+#include "BoundableModel.h"
 
 // #include "AutoMorphingModel.h"
 
@@ -57,13 +59,13 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
 
     snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
-    auto snakeRoot = Model::Create("snake", snakeMesh, snakeMaterial);
-    snakeRoot->Rotate(1.5708, Axis::Y);
+    auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
+    snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
     root->AddChild(snakeRoot);
 
-    snakeNodes.push_back(snakeRoot);
-    headings.push_back(0);
+    snakeNodes.push_back({snakeRoot, 0.0f});
+
     
     //Axis
     Eigen::MatrixXd vertices(6,3);
@@ -73,9 +75,9 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
+    RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
 
-    executor = std::make_shared<PeriodicExecutor>(PERIODIC_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
-    executor->Start();
+
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
@@ -230,100 +232,78 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     }
 }
 
-#define MOVEMENT_DISTANCE 0.01f
+#define MOVEMENT_DISTANCE 0.05f
 
 void BasicScene::PeriodicFunction() {
     for(auto &node : snakeNodes) {
-        Eigen::Vector3f translation = MOVEMENT_DISTANCE * node->GetRotation() * Eigen::Vector3f(0, 0, 1);
-        node->Translate(translation);
+        Eigen::Vector3f translation = MOVEMENT_DISTANCE * node.model->GetRotation() * Eigen::Vector3f(0, 0, 1);
+        node.model->Translate(translation);
     }
 
-    std::shared_ptr<Model> head = snakeNodes.front();
-    for(int i=1; i<snakeNodes.size(); i++) {
-        std::shared_ptr<Model> node = snakeNodes[i];
+
+
+    std::shared_ptr<NodeModel> head = snakeNodes.front().model;
+    for(int i=2; i<snakeNodes.size(); i++) {
+        std::shared_ptr<NodeModel> node = snakeNodes[i].model;
         if(ModelsCollide(head, node)) {
             std::cout << "Collusion!!!" << std::endl;
         }
     }
 
+
 }
 
 BasicScene::~BasicScene() {
-    if(executor != nullptr) {
-        executor->Stop();
+    for(auto &executor : executors) {
+        executor.Stop();
     }
 }
 
 void BasicScene::TurnRight() {
 //    headHeading -= NINETY_DEGREES_IN_RADIANS;
-    snakeNodes[0]->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    headings[0] += SNAKE_TURN_ANGLE_RADIANS;
+    snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    snakeNodes[0].heading += SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::TurnLeft() {
 //    headHeading += NINETY_DEGREES_IN_RADIANS;
-    snakeNodes[0]->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    headings[0] -= SNAKE_TURN_ANGLE_RADIANS;
+    snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    snakeNodes[0].heading -= SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::AddToTail() {
 
-    auto newNode = Model::Create("node", snakeMesh, snakeMaterial);
+    auto newNode = NodeModel::Create("node", snakeMesh, snakeMaterial);
+    std::shared_ptr<Model> parent = snakeNodes.back().model;
+    double heading = snakeNodes.back().heading;
 
-    std::shared_ptr<Model> parent = snakeNodes.back();
     root->AddChild(newNode);
     newNode->Rotate(parent->GetRotation());
     newNode->Translate(parent->GetTranslation());
-    double heading = headings.back();
+
 
     float xTrans = cos(heading);
     float yTrans = sin(heading);
 
-    newNode->Translate( NODE_HEIGHT * Eigen::Vector3f(-xTrans, yTrans, 0));
 
-    snakeNodes.push_back(newNode);
-    headings.push_back(heading);
+    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
+
+    snakeNodes.push_back({newNode, (float)heading});
 }
 
-Eigen::AlignedBox<float, 3> BasicScene::BoxOfModel(std::shared_ptr<cg3d::Model> model) {
-    std::vector<Eigen::Vector3f> fixedVertices;
-    for(auto meshList : model->GetMeshList()) {
-        for (auto meshData: meshList->data) {
-            Eigen::MatrixXd vertices = meshData.vertices;
-            for(int i=0; i<vertices.rows(); i++) {
-                Eigen::Vector4d vertex4d(vertices(i,0), vertices(i, 1), vertices(i, 2), 1);
-                Eigen::Vector4d fixed4d = model->GetTransform().cast<double>() * vertex4d;
-                Eigen::Vector3d fixed(fixed4d.x(), fixed4d.y(), fixed4d.z());
-                fixedVertices.emplace_back(fixed.cast<float>());
-            }
 
-        }
-    }
-
-    Eigen::Vector3f minCorner(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
-    Eigen::Vector3f maxCorner(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
-
-    for(Eigen::Vector3f vertex : fixedVertices) {
-        minCorner.x() = std::min(minCorner.x(), vertex.x());
-        minCorner.y() = std::min(minCorner.y(), vertex.y());
-        minCorner.z() = std::min(minCorner.z(), vertex.z());
-
-        maxCorner.x() = std::max(maxCorner.x(), vertex.x());
-        maxCorner.y() = std::max(maxCorner.y(), vertex.y());
-        maxCorner.z() = std::max(maxCorner.z(), vertex.z());
-    }
-
-
-    Eigen::AlignedBox<float, 3> box(minCorner, maxCorner);
-
-    return box;
-}
-
-#define AlignedBox3f Eigen::AlignedBox<float, 3>
-bool BasicScene::ModelsCollide(std::shared_ptr<cg3d::Model> m1, std::shared_ptr<cg3d::Model> m2) {
-    AlignedBox3f b1 = BoxOfModel(m1);
-    AlignedBox3f b2 = BoxOfModel(m2);
+bool BasicScene::ModelsCollide(BoundablePtr m1, BoundablePtr m2) {
+    Box b1 = m1->GetBoundingBox();
+    Box b2 = m2->GetBoundingBox();
 
     return b1.intersects(b2);
 }
+
+void BasicScene::RegisterPeriodic(int interval, const std::function<void(void)>& func) {
+    executors.emplace_back(interval, func);
+    executors.back().Start();
+}
+
+
+
 
