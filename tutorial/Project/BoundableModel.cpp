@@ -86,63 +86,29 @@ Box NodeModel::GetBoundingBox() {
     Vec3 scaling = GetScalingVec();
 
     Vec3 center = GetCenter();
-
-
     Vec3 diag = {NODE_WIDTH * scaling.x(), NODE_HEIGHT * scaling.y(), NODE_LENGTH * scaling.z()};
 
     Vec3 p1 = center - 0.5 * diag;
     Vec3 p2 = center + 0.5 * diag;
 
-    Vec3 minNode = p1;
-    Vec3 maxNode = p2;
-//
-//    minNode.x() = std::min(p1.x(), p2.x());
-//    minNode.y() = std::min(p1.y(), p2.y());
-//    minNode.z() = std::min(p1.z(), p2.z());
-//
-//    maxNode.x() = std::max(p1.x(), p2.x());
-//    maxNode.y() = std::max(p1.y(), p2.y());
-//    maxNode.z() = std::max(p1.z(), p2.z());
+    return Box(p1, p2);
 
 
-    auto radius = 0.5 * NODE_LENGTH * scaling.z();
-    Vec3 radiusVec = {radius, radius, radius};
+}
 
-    Vec3 minBall = center-radiusVec;
-    Vec3 maxBall = center+radiusVec;
-
-    bool debug = false;
-    if(debug) {
-        std::cout << "Center:" << std::endl;
-        printVec(GetTranslation());
-
-        std::cout << "Ball:" << std::endl;
-        std::cout << "min:" << std::endl;
-        printVec(minBall);
-        std::cout << "max:" << std::endl;
-        printVec(maxBall);
-
-        std::cout << "Node:" << std::endl;
-        std::cout << "min:" << std::endl;
-        printVec(minNode);
-        std::cout << "max:" << std::endl;
-        printVec(maxNode);
-
-        std::cout << std::endl;
-        std::cout << std::endl;
-
-    }
+Vec3 NodeModel::GetDiag() {
+    Vec3 scaling = GetScalingVec();
 
 
-    return Box(minNode, maxNode);
-
-
+    return ApplySelfTransform( GetCenter()- Eigen::Vector3f {NODE_WIDTH * scaling.x(), NODE_HEIGHT * scaling.y(), NODE_LENGTH * scaling.z()});
 }
 
 Box BallModel::GetBoundingBox() {
     auto radius = GetScaledRadius();
     Vec3 radiusVec = {radius, radius, radius};
     Vec3 center = GetTranslation();
+
+
 
     return Box(center - radiusVec, center + radiusVec);
 }
@@ -156,3 +122,5 @@ float BallModel::GetScaledRadius() {
 
     return BALL_RADIUS * scaling.x();
 }
+
+

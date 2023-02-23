@@ -36,7 +36,7 @@ protected:
 class NodeModel : public BoundableModel {
 public:
     Box GetBoundingBox() override;
-
+    Vec3 GetDiag();
     template<typename... Args>
     static std::shared_ptr<NodeModel> Create(Args&&... args) { return std::make_shared<NodeModel>(NodeModel{std::forward<Args>(args)...}); };
 

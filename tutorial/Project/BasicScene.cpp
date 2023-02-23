@@ -75,6 +75,9 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
+    for(int i=0; i<16; i++) {
+        AddToTail();
+    }
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
 
 
@@ -274,7 +277,7 @@ void BasicScene::TurnLeft() {
 void BasicScene::AddToTail() {
 
     auto newNode = NodeModel::Create("node", snakeMesh, snakeMaterial);
-    std::shared_ptr<Model> parent = snakeNodes.back().model;
+    std::shared_ptr<NodeModel> parent = snakeNodes.back().model;
     double heading = snakeNodes.back().heading;
 
     root->AddChild(newNode);
@@ -285,7 +288,7 @@ void BasicScene::AddToTail() {
     float xTrans = cos(heading);
     float yTrans = sin(heading);
 
-
+    Vec3 diag = parent->GetDiag();
     newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back({newNode, (float)heading});
