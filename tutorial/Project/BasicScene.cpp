@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 #include "GLFW/glfw3.h"
-#include "Mesh.h"
 #include "PickVisitor.h"
 #include "Renderer.h"
 #include "ObjLoader.h"
@@ -39,7 +38,8 @@ using namespace cg3d;
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
-    
+    camera->Translate(35, Axis::Z);
+
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
     auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")}; 
     daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
@@ -54,11 +54,15 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     auto program1 = std::make_shared<Program>("shaders/pickingShader");
     
      snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
+     prizeMaterial = {std::make_shared<Material>("prizeMaterial", program)}; // empty apple material
 //    SetNamedObject(cube, Model::Create, Mesh::Cube(), snakeMaterial, shared_from_this());
- 
+
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
+    prizeMaterial->AddTexture(0, "textures/grass.bmp", 2); // TODO: change apple texture
 
     snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+    prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")}; // TODO: change apple mesh
+
     auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
@@ -231,11 +235,18 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_SPACE:
                 AddToTail();
                 break;
+
+
+            case GLFW_KEY_Z:
+                AddPrize();
+                break;
+
         }
     }
 }
 
 #define MOVEMENT_DISTANCE 0.05f
+
 
 void BasicScene::PeriodicFunction() {
     for(auto &node : snakeNodes) {
@@ -253,6 +264,11 @@ void BasicScene::PeriodicFunction() {
         }
     }
 
+
+
+    for (auto &node : movingObjects){
+        node->MoveForward();
+    }
 
 }
 
@@ -290,6 +306,7 @@ void BasicScene::AddToTail() {
 
     Vec3 diag = parent->GetDiag();
     newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
+    newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back({newNode, (float)heading});
 }
@@ -310,3 +327,41 @@ void BasicScene::RegisterPeriodic(int interval, const std::function<void(void)>&
 
 
 
+
+Vector3f BasicScene::RandomSpawnPoint(){
+
+    // roll signs
+    float xSign = RollRandomAB(0,1) < 0.5 ? -1 : 1;
+    float ySign = RollRandomAB(0.0,1) < 0.5 ? -1 : 1;
+
+    // roll hor
+    float x = xSign * RollRandomAB(0, HorizontalBorder);
+
+    // roll ver
+    float y = ySign * RollRandomAB(0, VerticalBorder);
+
+    Vector3f spawnPoint(x, y, 0);
+    cout<<format("spawning apple at: ({} / {}, {} / {})\n", x, HorizontalBorder, y, VerticalBorder)<<endl;
+    return spawnPoint;
+}
+
+
+void BasicScene::AddPrize(){
+    // create the model for the apple
+    auto newModel = Model::Create("prize", prizeMesh, prizeMaterial);
+    root->AddChild(newModel);
+    newModel->Translate(RandomSpawnPoint());
+    newModel->Scale(0.01f, Axis::XYZ);
+
+    newModel->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+
+    newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::X);
+
+    auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
+
+    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Vector3f(0,0,1), velocity, root);
+
+    movingObjects.push_back(make_shared<MovingObject>(n));
+
+//    Node appleNode()
+}

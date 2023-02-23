@@ -1,11 +1,16 @@
 #pragma once
-#include "AutoMorphingModel.h"
-#include "Scene.h"
 #include "PeriodicExecutor.h"
 #include "types_macros.h"
 #include <memory>
 #include <utility>
 #include "BoundableModel.h"
+#include "MovingObject.h"
+#include <numbers>
+
+
+#define PrizeMaxVelocity 0.8f
+#define PrizeMinVelocity 0.2f
+
 
 #define UPDATE_INTERVAL_MILLIS 20
 #define COLLUSION_DETECTION_INTERVAL_MILLIS 500
@@ -14,8 +19,12 @@
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
 
 
+#define MOVEMENT_DISTANCE 0.03f
+
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
+
+using namespace Eigen;
 
 struct SnakeNode {
     std::shared_ptr<NodeModel> model;
@@ -40,8 +49,18 @@ public:
     static bool ModelsCollide(BoundablePtr m1, BoundablePtr m2);
     void RegisterPeriodic(int interval, const std::function<void(void)>& func);
 private:
+
+    Vector3f RandomSpawnPoint();
+    void AddPrize();
+
+    float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
     std::shared_ptr<Movable> root;
     std::vector<SnakeNode> snakeNodes;
+
+
+private:
+    std::vector<std::shared_ptr<cg3d::Model>> snakeNodes;
+    vector<shared_ptr<MovingObject>> movingObjects;
     int pickedIndex = 0;
     int tipIndex = 0;
     Eigen::VectorXi EMAP;
@@ -53,5 +72,9 @@ private:
 
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
+    std::shared_ptr<cg3d::Mesh> prizeMesh;
+    std::shared_ptr<cg3d::Material> prizeMaterial;
+    std::vector<float> headings;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
+
 };
