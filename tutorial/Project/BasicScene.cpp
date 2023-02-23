@@ -347,7 +347,7 @@ Vector3f BasicScene::RandomSpawnPoint(){
 
 void BasicScene::AddPrize(){
     // create the model for the apple
-    auto newModel = Model::Create("prize", prizeMesh, prizeMaterial);
+    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
     root->AddChild(newModel);
     newModel->Translate(RandomSpawnPoint());
     newModel->Scale(0.01f, Axis::XYZ);
