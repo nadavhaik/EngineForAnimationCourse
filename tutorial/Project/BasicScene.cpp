@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 #include "GLFW/glfw3.h"
-#include "Mesh.h"
 #include "PickVisitor.h"
 #include "Renderer.h"
 #include "ObjLoader.h"
@@ -28,16 +27,20 @@
 #include "igl/edge_collapse_is_valid.h"
 #include "igl/write_triangle_mesh.h"
 
+
+
 // #include "AutoMorphingModel.h"
 
 using namespace cg3d;
 
 
 
+
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     camera = Camera::Create( "camera", fov, float(width) / height, near, far);
-    
+    camera->Translate(35, Axis::Z);
+
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
     auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")}; 
     daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
@@ -52,14 +55,18 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     auto program1 = std::make_shared<Program>("shaders/pickingShader");
     
      snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
+     prizeMaterial = {std::make_shared<Material>("prizeMaterial", program)}; // empty apple material
 //    SetNamedObject(cube, Model::Create, Mesh::Cube(), snakeMaterial, shared_from_this());
- 
+
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
+    prizeMaterial->AddTexture(0, "textures/grass.bmp", 2); // TODO: change apple texture
 
     snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+    prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")}; // TODO: change apple mesh
+
     auto snakeRoot = Model::Create("snake", snakeMesh, snakeMaterial);
-    snakeRoot->Rotate(1.5708, Axis::Y);
-    snakeRoot->Translate(-10, Axis::Z);
+    snakeRoot->Rotate(1.5708f, Axis::Y);
+    snakeRoot->Translate(0, Axis::Z);
     root->AddChild(snakeRoot);
 
     snakeNodes.push_back(snakeRoot);
@@ -226,17 +233,28 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_SPACE:
                 AddToTail();
                 break;
+
+
+            case GLFW_KEY_Z:
+                AddPrize();
+                break;
+
         }
     }
 }
 
-#define MOVEMENT_DISTANCE 0.01f
+
 
 void BasicScene::PeriodicFunction() {
     for(auto &node : snakeNodes) {
         Eigen::Vector3f translation = MOVEMENT_DISTANCE * node->GetRotation() * Eigen::Vector3f(0, 0, 1);
         node->Translate(translation);
     }
+
+    for (auto &node : movingObjects){
+        node->MoveForward();
+    }
+
 }
 
 BasicScene::~BasicScene() {
@@ -270,9 +288,47 @@ void BasicScene::AddToTail() {
     float xTrans = cos(heading);
     float yTrans = sin(heading);
 
-    newNode->Translate( NODE_HEIGHT * Eigen::Vector3f(-xTrans, yTrans, 0));
+    newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back(newNode);
     headings.push_back(heading);
 }
 
+
+Vector3f BasicScene::RandomSpawnPoint(){
+
+    // roll signs
+    float xSign = RollRandomAB(0,1) < 0.5 ? -1 : 1;
+    float ySign = RollRandomAB(0.0,1) < 0.5 ? -1 : 1;
+
+    // roll hor
+    float x = xSign * RollRandomAB(0, HorizontalBorder);
+
+    // roll ver
+    float y = ySign * RollRandomAB(0, VerticalBorder);
+
+    Vector3f spawnPoint(x, y, 0);
+    cout<<format("spawning apple at: ({} / {}, {} / {})\n", x, HorizontalBorder, y, VerticalBorder)<<endl;
+    return spawnPoint;
+}
+
+
+void BasicScene::AddPrize(){
+    // create the model for the apple
+    auto newModel = Model::Create("prize", prizeMesh, prizeMaterial);
+    root->AddChild(newModel);
+    newModel->Translate(RandomSpawnPoint());
+    newModel->Scale(0.01f, Axis::XYZ);
+
+    newModel->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+
+    newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::X);
+
+    auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
+
+    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Vector3f(0,0,1), velocity, root);
+
+    movingObjects.push_back(make_shared<MovingObject>(n));
+
+//    Node appleNode()
+}
