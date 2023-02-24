@@ -39,17 +39,17 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
     tpsCam = Camera::Create( "tps", 90.0f, float(width) / height, near, far);
-    topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
+    topViewCam = Camera::Create( "camera", 80.0f, float(width) / height, near, far);
 
-    topViewCam->Translate(35, Axis::Z);
+    topViewCam->Translate(10, Axis::Z);
     camera = topViewCam;
 
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")}; 
-    daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
-    auto background{Model::Create("background", Mesh::Cube(), daylight)};
+    auto boxMat{std::make_shared<Material>("boxMat", "shaders/cubemapShader")};
+    boxMat->AddTexture(0, "textures/cubemaps/box0_", 3);
+    auto background{Model::Create("background", Mesh::Cube(), boxMat)};
     AddChild(background);
-    background->Scale(120, Axis::XYZ);
+    background->Scale(40, Axis::XYZ);
     background->SetPickable(false);
     background->SetStatic();
 
