@@ -25,7 +25,7 @@
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
 
-enum CameraType {POV, TOP_VIEW};
+enum CameraType {POV, TPS, TOP_VIEW};
 
 using namespace Eigen;
 
@@ -74,6 +74,7 @@ private:
 
     std::shared_ptr<Camera> topViewCam;
     std::shared_ptr<Camera> povCam;
+    std::shared_ptr<Camera> tpsCam;
 
     int pickedIndex = 0;
     int tipIndex = 0;

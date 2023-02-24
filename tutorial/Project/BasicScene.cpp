@@ -38,7 +38,9 @@ using namespace cg3d;
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
+    tpsCam = Camera::Create( "tps", 90.0f, float(width) / height, near, far);
     topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
+
     topViewCam->Translate(35, Axis::Z);
     camera = topViewCam;
 
@@ -68,9 +70,13 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
     root->AddChild(snakeRoot);
     snakeRoot->AddChild(povCam);
+    snakeRoot->AddChild(tpsCam);
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
     povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
+    tpsCam->RotateInSystem(tpsCam->GetRotation(), std::numbers::pi, Axis::Y);
+    tpsCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 6.0, Axis::Z);
+    tpsCam->Translate({0, 1, -1});
     povCam->Translate({0, 0, 1});
 
 
@@ -437,13 +443,17 @@ void BasicScene::AddPrize(){
 
 void BasicScene::SwitchCamera() {
     switch (cameraType) {
+        case CameraType::TPS:
+            cameraType = CameraType::POV;
+            camera = povCam;
+            break;
         case CameraType::POV:
             cameraType = CameraType::TOP_VIEW;
             camera = topViewCam;
             break;
         case CameraType::TOP_VIEW:
-            cameraType = CameraType::POV;
-            camera = povCam;
+            cameraType = CameraType::TPS;
+            camera = tpsCam;
             break;
     }
     viewport->camera = camera;
