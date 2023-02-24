@@ -216,22 +216,16 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 TurnRight();
                 break;
             case GLFW_KEY_W:
-                camera->TranslateInSystem(system, {0, 0.1f, 0});
+                TurnUp();
                 break;
             case GLFW_KEY_S:
-                camera->TranslateInSystem(system, {0, -0.1f, 0});
+                TurnDown();
                 break;
             case GLFW_KEY_A:
-                camera->TranslateInSystem(system, {-0.1f, 0, 0});
+                TurnLeft();
                 break;
             case GLFW_KEY_D:
-                camera->TranslateInSystem(system, {0.1f, 0, 0});
-                break;
-            case GLFW_KEY_B:
-                camera->TranslateInSystem(system, {0, 0, 0.1f});
-                break;
-            case GLFW_KEY_F:
-                camera->TranslateInSystem(system, {0, 0, -0.1f});
+                TurnRight();
                 break;
             case GLFW_KEY_1:
                 if( pickedIndex > 0)
