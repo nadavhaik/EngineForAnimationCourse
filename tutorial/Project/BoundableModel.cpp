@@ -117,8 +117,8 @@ float BallModel::GetScaledRadius() {
     Vec3 scaling = GetScalingVec();
 
 
-    assert(scaling.x() == scaling.y());
-    assert(scaling.y() == scaling.z());
+    assert(scaling.x() - scaling.y() < 0.0001);
+    assert(scaling.y() - scaling.z() < 0.0001);
 
     return BALL_RADIUS * scaling.x();
 }

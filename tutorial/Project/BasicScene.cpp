@@ -37,8 +37,10 @@ using namespace cg3d;
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
-    camera = Camera::Create( "camera", fov, float(width) / height, near, far);
-    camera->Translate(35, Axis::Z);
+    povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
+    topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
+    topViewCam->Translate(35, Axis::Z);
+    camera = topViewCam;
 
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
     auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")}; 
@@ -64,9 +66,13 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")}; // TODO: change apple mesh
 
     auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
+    root->AddChild(snakeRoot);
+    snakeRoot->AddChild(povCam);
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
-    root->AddChild(snakeRoot);
+    povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
+    povCam->Translate({0, 0, 1});
+
 
     snakeNodes.push_back({snakeRoot, 0.0f});
 
@@ -82,21 +88,22 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     for(int i=0; i<16; i++) {
         AddToTail();
     }
+
+
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
-
-
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
 {
+    mtx.lock();
     Scene::Update(program, proj, view, model);
     program.SetUniform4f("lightColor", 0.8f, 0.3f, 0.0f, 0.5f);
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
+    mtx.unlock();
 //    cyl->Rotate(0.001f, Axis::Y);
-
 //    snakeNodes[0]->Translate(0.01f, Axis::Y);
 }
 
@@ -184,12 +191,17 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
+            case GLFW_KEY_TAB:
+                SwitchCamera();
+                break;
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
             case GLFW_KEY_UP:
+                TurnUp();
                 break;
             case GLFW_KEY_DOWN:
+                TurnDown();
                 break;
             case GLFW_KEY_LEFT:
                 TurnLeft();
@@ -248,27 +260,48 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 #define MOVEMENT_DISTANCE 0.05f
 
 
+void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
+    std::erase_if(movingObjects,
+                  [moving](std::shared_ptr<MovingObject> movingObj) {return movingObj == moving;});
+    root->RemoveChild(moving->GetModel());
+}
+
+
+void BasicScene::DetectCollisions() {
+    std::shared_ptr<NodeModel> head = snakeNodes.front().model;
+    for(int i=2; i<snakeNodes.size(); i++) {
+        std::shared_ptr<NodeModel> node = snakeNodes[i].model;
+        if(ModelsCollide(head, node)) {
+            std::cout << "Collusion With Tail!!!" << std::endl;
+        }
+    }
+
+    for(const auto &prize : functionals::filter<MovingPtr>(movingObjects,
+                                                    [](const MovingPtr &obj){return obj->IsPrize();})) {
+        if(ModelsCollide(head, prize->GetModel())) {
+            RemoveMoving(prize);
+            ShortenSnake();
+        }
+    }
+}
+
 void BasicScene::PeriodicFunction() {
+    mtx.lock();
+
     for(auto &node : snakeNodes) {
         Eigen::Vector3f translation = MOVEMENT_DISTANCE * node.model->GetRotation() * Eigen::Vector3f(0, 0, 1);
         node.model->Translate(translation);
     }
 
-
-
-    std::shared_ptr<NodeModel> head = snakeNodes.front().model;
-    for(int i=2; i<snakeNodes.size(); i++) {
-        std::shared_ptr<NodeModel> node = snakeNodes[i].model;
-        if(ModelsCollide(head, node)) {
-            std::cout << "Collusion!!!" << std::endl;
-        }
-    }
-
+//    FollowHeadWithCamera();
 
 
     for (auto &node : movingObjects){
         node->MoveForward();
     }
+    DetectCollisions();
+
+    mtx.unlock();
 
 }
 
@@ -278,15 +311,46 @@ BasicScene::~BasicScene() {
     }
 }
 
+void BasicScene::TurnUp() {
+    if(cameraType == TOP_VIEW) {
+        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+    } else {
+        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    }
+//    FollowHeadWithCamera();
+
+}
+
+void BasicScene::TurnDown() {
+    if(cameraType == TOP_VIEW) {
+        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+    } else {
+        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    }
+//    FollowHeadWithCamera();
+
+}
+
 void BasicScene::TurnRight() {
 //    headHeading -= NINETY_DEGREES_IN_RADIANS;
-    snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    if(cameraType == TOP_VIEW) {
+        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    } else {
+        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+    }
+//    FollowHeadWithCamera();
     snakeNodes[0].heading += SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::TurnLeft() {
 //    headHeading += NINETY_DEGREES_IN_RADIANS;
-    snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    if(cameraType == TOP_VIEW) {
+        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+    } else {
+        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+    }
+//    FollowHeadWithCamera();
+
     snakeNodes[0].heading -= SNAKE_TURN_ANGLE_RADIANS;
 }
 
@@ -309,6 +373,12 @@ void BasicScene::AddToTail() {
     newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     snakeNodes.push_back({newNode, (float)heading});
+}
+
+void BasicScene::ShortenSnake() {
+    auto lastNode = snakeNodes.back().model;
+    snakeNodes.pop_back();
+    root->RemoveChild(lastNode);
 }
 
 
@@ -340,7 +410,7 @@ Vector3f BasicScene::RandomSpawnPoint(){
     // roll ver
     float y = ySign * RollRandomAB(0, VerticalBorder);
 
-    Vector3f spawnPoint(x, y, 0);
+    Vector3f spawnPoint(x, y, -10);
     return spawnPoint;
 }
 
@@ -350,7 +420,7 @@ void BasicScene::AddPrize(){
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
     root->AddChild(newModel);
     newModel->Translate(RandomSpawnPoint());
-    newModel->Scale(0.01f, Axis::XYZ);
+    newModel->Scale(0.02f, Axis::XYZ);
 
     newModel->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
 
@@ -363,4 +433,36 @@ void BasicScene::AddPrize(){
     movingObjects.push_back(make_shared<MovingObject>(n));
 
 //    Node appleNode()
+}
+
+void BasicScene::SwitchCamera() {
+    switch (cameraType) {
+        case CameraType::POV:
+            cameraType = CameraType::TOP_VIEW;
+            camera = topViewCam;
+            break;
+        case CameraType::TOP_VIEW:
+            cameraType = CameraType::POV;
+            camera = povCam;
+            break;
+    }
+    viewport->camera = camera;
+}
+
+void BasicScene::FollowHeadWithCamera() {
+    povCam->SetTransform(snakeNodes[0].model->GetTransform());
+    povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
+    povCam->Translate({1, 1, 1});
+}
+
+void BasicScene::ViewportSizeCallback(cg3d::Viewport *_viewport) {
+    topViewCam->SetProjection(float(_viewport->width) / float(_viewport->height));
+    povCam->SetProjection(float(_viewport->width) / float(_viewport->height));
+}
+
+void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
+    Scene::ViewportSizeCallback(_viewport);
+    viewport = _viewport;
+
+    Scene::AddViewportCallback(viewport);
 }

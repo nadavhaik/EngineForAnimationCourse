@@ -55,12 +55,13 @@ void Movable::AddChildren(const std::vector<std::shared_ptr<Movable>>& _children
         AddChild(child);
 }
 
-void Movable::RemoveChild(const std::shared_ptr<Movable>& child)
+void Movable::RemoveChild(const std::shared_ptr<Movable>& childToRemove)
 {
-    auto it = std::find(children.begin(), children.end(), child);
-    if (it != children.end())
-        children.erase(it);
-    child->parent.reset();
+    std::vector<std::shared_ptr<Movable>> newChildren;
+    std::copy_if(children.begin(), children.end(), std::back_inserter(newChildren),
+                 [childToRemove](const std::shared_ptr<Movable>& movableChild) {return movableChild != childToRemove;});
+    children = newChildren;
+    childToRemove->parent.reset();
 }
 
 const Eigen::Vector3f& Movable::AxisVec(Axis axis)
@@ -264,6 +265,17 @@ Eigen::Matrix4f Movable::GetTransform()
 void Movable::SetTransform(const Eigen::Matrix4f& transform)
 {
     SetTinTout(GetScaling(transform), GetTranslationRotation(transform));
+}
+
+std::vector<std::shared_ptr<Movable>> Movable::GetChildren() {
+    std::vector<std::shared_ptr<Movable>> childrenCopy;
+    std::vector<std::shared_ptr<Movable>> safeCopy;
+    std::copy(children.begin(), children.end(), std::back_inserter(childrenCopy));
+
+    std::copy_if(childrenCopy.begin(), childrenCopy.end(), std::back_inserter(safeCopy),
+                 [](std::shared_ptr<Movable> movablePtr) {return movablePtr != nullptr;});
+    return safeCopy;
+
 }
 
 } // namespace cg3d

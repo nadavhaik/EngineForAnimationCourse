@@ -6,7 +6,8 @@
 #include "BoundableModel.h"
 #include "MovingObject.h"
 #include <numbers>
-
+#include "functionals.h"
+#include "mutex"
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -23,6 +24,8 @@
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
+
+enum CameraType {POV, TOP_VIEW};
 
 using namespace Eigen;
 
@@ -43,24 +46,39 @@ public:
     void CursorPosCallback(cg3d::Viewport* viewport, int x, int y, bool dragging, int* buttonState)  override;
     void KeyCallback(cg3d::Viewport* viewport, int x, int y, int key, int scancode, int action, int mods) override;
     void PeriodicFunction();
+    void TurnUp();
+    void TurnDown();
     void TurnRight();
     void TurnLeft();
+    void SwitchCamera();
     void AddToTail();
+    void ShortenSnake();
     static bool ModelsCollide(BoundablePtr m1, BoundablePtr m2);
+    void DetectCollisions();
     void RegisterPeriodic(int interval, const std::function<void(void)>& func);
+    void AddViewportCallback(cg3d::Viewport* _viewport) override;
+    void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
 
     Vector3f RandomSpawnPoint();
     void AddPrize();
 
     float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
     std::shared_ptr<Movable> root;
-
+    void RemoveMoving(shared_ptr<MovingObject> moving);
+    void FollowHeadWithCamera();
 
 private:
     std::vector<SnakeNode> snakeNodes;
     vector<shared_ptr<MovingObject>> movingObjects;
+    CameraType cameraType = TOP_VIEW;
+
+    std::shared_ptr<Camera> topViewCam;
+    std::shared_ptr<Camera> povCam;
+
     int pickedIndex = 0;
     int tipIndex = 0;
+
+
     Eigen::VectorXi EMAP;
     Eigen::MatrixXi F,E,EF,EI;
     Eigen::VectorXi EQ;
@@ -73,4 +91,6 @@ private:
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
+    std::mutex mtx;
+    cg3d::Viewport* viewport = nullptr;
 };

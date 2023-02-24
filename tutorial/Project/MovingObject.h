@@ -37,7 +37,7 @@ public:
 
     void MoveForward();
 
-    shared_ptr<Model> GetModel(){return model;};
+    BoundablePtr GetModel(){return model;};
     float GetVelocity(){return velocity;};
 
 private:
@@ -47,6 +47,8 @@ private:
     float velocity;
     std::shared_ptr<Movable> root;
 };
+
+#define MovingPtr std::shared_ptr<MovingObject>
 
 class Snake: MovingObject{
 public:

@@ -7,6 +7,8 @@
 #include "Material.h"
 #include "Visitor.h"
 #include "Eigen/Geometry"
+#include "mutex"
+
 
 class Visitor;
 
@@ -22,12 +24,13 @@ protected:
     Movable(const Movable& other); // important: doesn't add itself to the parent's children (object isn't constructed yet)
     Movable(Movable&&) = default; // important: doesn't add itself to the parent's children (object isn't constructed yet)
     Movable& operator=(const Movable& other);
-private:    
+private:
     Eigen::Matrix4f aggregatedTransform{Eigen::Matrix4f::Identity()}; // aggregation of all transformations starting from top level
 
 public:
+    std::vector<std::shared_ptr<Movable>> GetChildren();
+    std::vector<std::shared_ptr<Movable>> children;
     std::string name;
-
     template<typename... Args>
     static std::shared_ptr<Movable> Create(Args&&... args) { return std::shared_ptr<Movable>(new Movable{std::forward<Args>(args)...}); };
 
@@ -37,11 +40,11 @@ public:
 
     enum class Axis { X, Y, Z, XY, XZ, YZ, XYZ };
 
-    virtual void Accept(Visitor* visitor) { visitor->Visit(this); }
+    virtual void Accept(Visitor* visitor) {visitor->Visit(this);}
 
     void AddChild(std::shared_ptr<Movable> child);
     void AddChildren(const std::vector<std::shared_ptr<Movable>>& _children);
-    void RemoveChild(const std::shared_ptr<Movable>& child);
+    void RemoveChild(const std::shared_ptr<Movable>& childToRemove);
 
     virtual void SetCenter(const Eigen::Vector3f& point);
 
@@ -87,7 +90,6 @@ public:
     float lineWidth = 5;
     bool isPickable = true;
     bool isStatic = false;
-    std::vector<std::shared_ptr<Movable>> children;
     std::weak_ptr<Movable> parent;
     std::weak_ptr<Movable> scene;
 };
