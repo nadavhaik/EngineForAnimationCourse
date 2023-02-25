@@ -47,12 +47,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
     auto boxMat{std::make_shared<Material>("boxMat", "shaders/cubemapShader")};
     boxMat->AddTexture(0, "textures/cubemaps/box0_", 3);
-    auto background{Model::Create("background", Mesh::Cube(), boxMat)};
-    AddChild(background);
-    background->Scale(40, Axis::XYZ);
-    background->SetPickable(false);
-    background->SetStatic();
-
+    backgroundBox = ConstantBoundable::Create("backgroundBox", Mesh::Cube(), boxMat);
+    AddChild(backgroundBox);
+    backgroundBox->Scale(40, Axis::XYZ);
+    backgroundBox->SetPickable(false);
+    backgroundBox->SetStatic();
+    backgroundBox->CalculateBB();
  
     auto program = std::make_shared<Program>("shaders/phongShader");
     auto program1 = std::make_shared<Program>("shaders/pickingShader");
@@ -64,10 +64,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
     prizeMaterial->AddTexture(0, "textures/grass.bmp", 2); // TODO: change apple texture
 
-    snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
+    nodeMesh = {IglLoader::MeshFromFiles("snake", "data/snake2.obj")};
+    snakeMesh = {IglLoader::MeshFromFiles("snake", "data/snake2.obj")};
+
     prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")}; // TODO: change apple mesh
 
-    auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
+    auto snakeRoot = NodeModel::Create("snake", nodeMesh, snakeMaterial);
     root->AddChild(snakeRoot);
     snakeRoot->AddChild(povCam);
     snakeRoot->AddChild(tpsCam);
@@ -283,6 +285,10 @@ void BasicScene::DetectCollisions() {
             ShortenSnake();
         }
     }
+
+    if(!InBox(head)) {
+        std::cout << "Head is not in box!" << std::endl;
+    }
 }
 
 void BasicScene::PeriodicFunction() {
@@ -312,43 +318,43 @@ BasicScene::~BasicScene() {
 }
 
 void BasicScene::TurnUp() {
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    } else {
+//    if(cameraType == TOP_VIEW) {
+//        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+//    } else {
         snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    }
+//    }
 //    FollowHeadWithCamera();
 
 }
 
 void BasicScene::TurnDown() {
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    } else {
+//    if(cameraType == TOP_VIEW) {
+//        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
+//    } else {
         snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    }
+//    }
 //    FollowHeadWithCamera();
 
 }
 
 void BasicScene::TurnRight() {
 //    headHeading -= NINETY_DEGREES_IN_RADIANS;
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    } else {
+//    if(cameraType == TOP_VIEW) {
+//        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+//    } else {
         snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    }
+//    }
 //    FollowHeadWithCamera();
     snakeNodes[0].heading += SNAKE_TURN_ANGLE_RADIANS;
 }
 
 void BasicScene::TurnLeft() {
 //    headHeading += NINETY_DEGREES_IN_RADIANS;
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    } else {
+//    if(cameraType == TOP_VIEW) {
+//        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+//    } else {
         snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    }
+//    }
 //    FollowHeadWithCamera();
 
     snakeNodes[0].heading -= SNAKE_TURN_ANGLE_RADIANS;
@@ -356,7 +362,7 @@ void BasicScene::TurnLeft() {
 
 void BasicScene::AddToTail() {
 
-    auto newNode = NodeModel::Create("node", snakeMesh, snakeMaterial);
+    auto newNode = NodeModel::Create("node", nodeMesh, snakeMaterial);
     std::shared_ptr<NodeModel> parent = snakeNodes.back().model;
     double heading = snakeNodes.back().heading;
 
@@ -469,4 +475,8 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
     viewport = _viewport;
 
     Scene::AddViewportCallback(viewport);
+}
+
+bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
+    return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
 }

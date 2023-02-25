@@ -66,6 +66,7 @@ public:
     std::shared_ptr<Movable> root;
     void RemoveMoving(shared_ptr<MovingObject> moving);
     void FollowHeadWithCamera();
+    bool InBox(const BoundablePtr &model);
 
 private:
     std::vector<SnakeNode> snakeNodes;
@@ -75,6 +76,7 @@ private:
     std::shared_ptr<Camera> topViewCam;
     std::shared_ptr<Camera> povCam;
     std::shared_ptr<Camera> tpsCam;
+    std::shared_ptr<ConstantBoundable> backgroundBox;
 
     int pickedIndex = 0;
     int tipIndex = 0;
@@ -89,6 +91,7 @@ private:
 
     std::shared_ptr<cg3d::Mesh> prizeMesh;
     std::shared_ptr<cg3d::Material> prizeMaterial;
+    std::shared_ptr<cg3d::Mesh> nodeMesh;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
