@@ -42,10 +42,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
 
     topViewCam->Translate(35, Axis::Z);
-    camera = topViewCam;
+
+    cameraType = CameraType::TPS;
+    camera = tpsCam;
 
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
-    auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")}; 
+    auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")};
     daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
     auto background{Model::Create("background", Mesh::Cube(), daylight)};
     AddChild(background);
@@ -53,12 +55,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     background->SetPickable(false);
     background->SetStatic();
 
- 
+
     auto program = std::make_shared<Program>("shaders/phongShader");
     auto program1 = std::make_shared<Program>("shaders/pickingShader");
-    
-     snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
-     prizeMaterial = {std::make_shared<Material>("prizeMaterial", program)}; // empty apple material
+
+    snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
+    prizeMaterial = {std::make_shared<Material>("prizeMaterial", program)}; // empty apple material
 
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
     prizeMaterial->AddTexture(0, "textures/grass.bmp", 2); // TODO: change apple texture
@@ -73,15 +75,17 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
     snakeRoot->Translate(-10, Axis::Z);
     povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
+    povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 6.0, Axis::Z);
+    povCam->Translate({0, 1, -1});
+
     tpsCam->RotateInSystem(tpsCam->GetRotation(), std::numbers::pi, Axis::Y);
-    tpsCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 6.0, Axis::Z);
-    tpsCam->Translate({0, 1, -1});
-    povCam->Translate({0, 0, 1});
+    tpsCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 8.0, Axis::Z);
+    tpsCam->Translate({0, 5, -7});
+
+    Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Vector3f(0,0,1), nullptr, root, 0.0f);
+    snakeNodes.push_back(make_shared<Snake>(head));
 
 
-    snakeNodes.push_back({snakeRoot, 0.0f});
-
-    
     //Axis
     Eigen::MatrixXd vertices(6,3);
     vertices << -1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1;
@@ -90,8 +94,12 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
-    for(int i=0; i<1; i++) {
-        AddToTail();
+
+//    int numOfStartChildren = 1;
+    int numOfStartChildren = 4;
+
+    for(int i=0; i<numOfStartChildren; i++) {
+        AddToTail(snakeNodes.back());
     }
 
 
@@ -204,29 +212,17 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
-            case GLFW_KEY_UP:
-                TurnUp();
+            case GLFW_KEY_UP: case GLFW_KEY_W:
+                Turn(UP);
                 break;
-            case GLFW_KEY_DOWN:
-                TurnDown();
+            case GLFW_KEY_DOWN: case GLFW_KEY_S:
+                Turn(DOWN);
                 break;
-            case GLFW_KEY_LEFT:
-                TurnLeft();
+            case GLFW_KEY_LEFT: case GLFW_KEY_A:
+                Turn(LEFT);
                 break;
-            case GLFW_KEY_RIGHT:
-                TurnRight();
-                break;
-            case GLFW_KEY_W:
-                TurnUp();
-                break;
-            case GLFW_KEY_S:
-                TurnDown();
-                break;
-            case GLFW_KEY_A:
-                TurnLeft();
-                break;
-            case GLFW_KEY_D:
-                TurnRight();
+            case GLFW_KEY_RIGHT: case GLFW_KEY_D:
+                Turn(RIGHT);
                 break;
             case GLFW_KEY_1:
 //                if( pickedIndex > 0)
@@ -246,7 +242,7 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
                 break;
             case GLFW_KEY_SPACE:
-                AddToTail();
+                AddToTail(snakeNodes.back());
                 break;
 
 
@@ -269,9 +265,9 @@ void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
 
 
 void BasicScene::DetectCollisions() {
-    std::shared_ptr<NodeModel> head = snakeNodes.front().model;
+    std::shared_ptr<NodeModel> head = snakeNodes.front()->GetNodeModel();
     for(int i=2; i<snakeNodes.size(); i++) {
-        std::shared_ptr<NodeModel> node = snakeNodes[i].model;
+        std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
             std::cout << "Collusion With Tail!!!" << std::endl;
         }
@@ -289,10 +285,22 @@ void BasicScene::DetectCollisions() {
 void BasicScene::PeriodicFunction() {
     mtx.lock();
 
-    for(auto &node : snakeNodes) {
-        Eigen::Vector3f translation = MOVEMENT_DISTANCE * node.model->GetRotation() * Eigen::Vector3f(0, 0, 1);
-        node.model->Translate(translation);
+    int size = snakeNodes[0]->rotationQueue.size();
+//    if (size  == MAX_QUEUE_SIZE - 1)
+//        snakeNodes[0]->ClearQueue();
+    cout<<size<<"\n"<<endl;
+
+    shared_ptr<Snake> snake = snakeNodes[0];
+    while (snake != nullptr){
+        Rotate(snake);
+        snake->MoveForward();
+        snake = snake->child;
     }
+
+//    for(auto &node : snakeNodes) {
+//        Rotate(node);
+//        node->MoveForward();
+//    }
 
 //    FollowHeadWithCamera();
 
@@ -304,6 +312,7 @@ void BasicScene::PeriodicFunction() {
 
     mtx.unlock();
 
+
 }
 
 BasicScene::~BasicScene() {
@@ -312,72 +321,103 @@ BasicScene::~BasicScene() {
     }
 }
 
-void BasicScene::TurnUp() {
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    } else {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+void BasicScene::Turn(MovementDirection type){
+    int axis;
+    float angle = SNAKE_TURN_ANGLE_RADIANS;
+    switch (type){
+        case RIGHT:
+            axis = 1; // Y axis
+            angle *= -1; // change angle
+            snakeNodes[0]->heading += SNAKE_TURN_ANGLE_RADIANS;
+            break;
+        case LEFT:
+            axis = 1; // Y axis
+            angle *= 1; // dont change angle
+            snakeNodes[0]->heading -= SNAKE_TURN_ANGLE_RADIANS;
+            break;
+        case UP:
+            axis = 0; // X axis
+            angle *= -1; // change angle
+            break;
+        case DOWN:
+            axis = 0; // X axis
+            angle *= 1; // dont change angle
+            break;
     }
-//    FollowHeadWithCamera();
+
+    auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
+    auto rotation = make_shared<pair<float, int>>(make_pair(angle, axis));
+
+    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<float, int>>>>
+            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<float, int>>(make_pair(angle, axis))));
+
+    snakeNodes[0]->AddRotation(newTurn);
 
 }
 
-void BasicScene::TurnDown() {
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    } else {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
+void BasicScene::Rotate(shared_ptr<Snake> snake) {
+
+    // fix snake rotation queue
+
+    shared_ptr<pair<float, int>> rotation = snake->Rotate();
+
+//    // if shouldnt rotate, safe return
+//    if (rotation.second == -1)
+//        return;
+//
+    while(rotation != nullptr)
+    {
+        float angle = rotation->first;
+        Axis turnAxis;
+        switch (rotation->second){
+            case 0: // if up or down
+                turnAxis = Axis::X;
+                break;
+            case 1: // if right or left
+                turnAxis = Axis::Y;
+                break;
+        }
+
+        // else rotate by angle and turnAxis as in the needed turn
+        snake->GetNodeModel()->Rotate(angle, turnAxis);
+        auto x = "";
+        rotation = snake->Rotate();
     }
-//    FollowHeadWithCamera();
+
 
 }
 
-void BasicScene::TurnRight() {
-//    headHeading -= NINETY_DEGREES_IN_RADIANS;
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    } else {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    }
-//    FollowHeadWithCamera();
-    snakeNodes[0].heading += SNAKE_TURN_ANGLE_RADIANS;
-}
-
-void BasicScene::TurnLeft() {
-//    headHeading += NINETY_DEGREES_IN_RADIANS;
-    if(cameraType == TOP_VIEW) {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-    } else {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-    }
-//    FollowHeadWithCamera();
-
-    snakeNodes[0].heading -= SNAKE_TURN_ANGLE_RADIANS;
-}
-
-void BasicScene::AddToTail() {
+void BasicScene::AddToTail(shared_ptr<Snake> parent) {
 
     auto newNode = NodeModel::Create("node", snakeMesh, snakeMaterial);
-    std::shared_ptr<NodeModel> parent = snakeNodes.back().model;
-    double heading = snakeNodes.back().heading;
+    shared_ptr<NodeModel> _parent = parent->GetNodeModel();
+    double heading = parent->heading;
 
     root->AddChild(newNode);
-    newNode->Rotate(parent->GetRotation());
-    newNode->Translate(parent->GetTranslation());
+    newNode->Rotate(_parent->GetRotation());
+    newNode->Translate(_parent->GetTranslation());
 
 
     float xTrans = cos(heading);
     float yTrans = sin(heading);
 
-    Vec3 diag = parent->GetDiag();
+    Vec3 diag = _parent->GetDiag();
 //    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
+
     newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
-    snakeNodes.push_back({newNode, (float)heading});
+    Snake newSnake(TAIL, newNode, newNode->GetRotation() * Vector3f(0,0,1), parent, root, (float)heading);
+    // add as child of the previous snack (the back of snake list)
+    auto add = make_shared<Snake>(newSnake);
+    parent->AddChild(add);
+    // add new snake to the list;
+    snakeNodes.push_back(add);
+    auto x = "after ";
 }
 
 void BasicScene::ShortenSnake() {
-    auto lastNode = snakeNodes.back().model;
+    auto lastNode = snakeNodes.back()->GetNodeModel();
+    snakeNodes.back()->RemoveChild();
     snakeNodes.pop_back();
     root->RemoveChild(lastNode);
 }
@@ -426,6 +466,8 @@ void BasicScene::AddPrize(){
     newModel->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
 
     newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::X);
+    newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::Y);
+    newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::Z);
 
     auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
 
@@ -455,7 +497,7 @@ void BasicScene::SwitchCamera() {
 }
 
 void BasicScene::FollowHeadWithCamera() {
-    povCam->SetTransform(snakeNodes[0].model->GetTransform());
+    povCam->SetTransform(snakeNodes[0]->GetNodeModel()->GetTransform());
     povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
     povCam->Translate({1, 1, 1});
 }

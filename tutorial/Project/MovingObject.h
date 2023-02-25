@@ -12,9 +12,11 @@ enum SnakeType{HEAD, TAIL};
 #include "Mesh.h"
 #include "AutoMorphingModel.h"
 #include "BoundableModel.h"
+#include <queue>
 
 #define HorizontalBorder 9.0f
 #define VerticalBorder 9.0f
+#define MAX_QUEUE_SIZE 100
 
 
 
@@ -37,14 +39,14 @@ public:
 
     void MoveForward();
 
-    BoundablePtr GetModel(){return model;};
+    virtual BoundablePtr GetModel(){return model;};
     float GetVelocity(){return velocity;};
-
-private:
-    ObjectType type;
-    BoundablePtr model;
     Vector3f direction;
     float velocity;
+
+private:
+    BoundablePtr model;
+    ObjectType type;
     std::shared_ptr<Movable> root;
 };
 
@@ -52,15 +54,26 @@ private:
 
 class Snake: MovingObject{
 public:
-    Snake(SnakeType _type, BoundablePtr _model, Vector3f _direction, shared_ptr<Snake> _parent, shared_ptr<Movable> root):
-        MovingObject(SNAKE, _model, _direction, 1, root), type(_type), parent(_parent){};
+    Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent, shared_ptr<Movable> root, float _h):
+        MovingObject(SNAKE, nullptr, _direction, 1, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){};
 
     bool IsHead(){return type == HEAD;};
     bool IsTail(){return type == TAIL;};
-
-private:
     SnakeType type;
     shared_ptr<Snake> parent;
+    shared_ptr<Snake> child;
+    void AddChild(shared_ptr<Snake> _child){child = _child;};
+    void RemoveChild(){child = nullptr;};
+    float heading;
+    shared_ptr<NodeModel> GetNodeModel(){return snakeModel;};
+    void MoveForward();
+    void AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> newPair);
+    void ClearQueue();
+    shared_ptr<pair<float, int>> Rotate();
+    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>>> rotationQueue;
+
+private:
+    shared_ptr<NodeModel> snakeModel;
 };
 
 

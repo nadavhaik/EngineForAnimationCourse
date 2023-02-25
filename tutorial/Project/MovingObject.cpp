@@ -7,6 +7,7 @@ using namespace cg3d;
 using namespace std;
 using namespace Eigen;
 
+
 float sign(float orig){return orig >= 0 ? 1.0f : -1.0;}
 float angleBetweenVecs(Vector3f a, Vector3f b){
     float x1 = a.x();
@@ -35,9 +36,117 @@ void MovingObject::MoveForward() {
         if (touchingVertical || touchingHorizonal){
             root->RemoveChild(model);
         }
+        model->Translate((velocity/5) * direction);
+    }
+}
+
+Vector3f NormalBetweenTwoVectors(Vector3f a, Vector3f b){
+    Vector3f crossProd (a.x() * b.x(), a.y() * b.y(), a.z() * b.z());
+    return (1/crossProd.norm()) * crossProd;
+}
+
+bool SamePos(Vec3 a, Vec3 b){
+    Vec3 diff = b - a;
+    float delta = 1e-3;
+    for (int i = 0; i < 3; i++){
+        auto diffSign = sign(diff[i]);
+        auto diffPositive = diff[i] < delta;
+        auto diffNegative = -1 * diff[i] < delta;
+        bool isDiffIOk = sign(diff[i]) > 0 ? diffPositive : diffNegative;
+        if (!isDiffIOk)
+            return false;
+//        cout<<delta<<"\n"<<endl;
+    }
+    return true;
+//    sign(diff.z()) > 1 ? diff.z() < delta : -1 * diff.z() > delta;
+
+}
+
+void Snake::MoveForward() {
+    if (rotationQueue.size() > MAX_QUEUE_SIZE)
+            return;
+    auto rot = GetNodeModel()->GetRotation();
+
+    Vector3f front = Vector3f (0,0,1);
+    Vector3f back = -1.0 * front;
+    Vector3f zero = Vector3f (0,0,0);
+
+    Vector3f p0(GetNodeModel()->GetTranslation());
+    Vector3f p1(zero);
+    Vector3f p2(rot * front);
+    Vec3 parentPos;
+
+    if (IsTail()){// && SamePos(parentPos = parent->GetNodeModel()->GetTranslation(), p0)){
+//        Vec3 currentPos = p0;
+
+//        p2 = parent->GetNodeModel()->GetRotation() * front;   // !!!!! can follow tail
+
+
+//        Vec3 parentPos = p2;
+//
+//
+//        Vec3 projectionParOnFront = rot * Vec3(0,0,parentPos.z());
+//        projectionParOnFront += currentPos;
+//
+//        Vector3f adj = (projectionParOnFront - currentPos);
+//        Vector3f hypo = (parentPos - currentPos);
+//
+//        float arccos = adj.norm() / hypo.norm();
+//        float tetha = acos(arccos);
+//        Vector3f normal = NormalBetweenTwoVectors(adj, hypo);
+//
+//            snakeModel->Rotate(tetha, normal);
     }
 
 
-    model->Translate((velocity/10) * direction);
+    // Translate to p2
+    snakeModel->Translate((velocity / 30.0f) * p2);
+    // or
+    // Do bezier
+}
 
+void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> newPair) {
+    if (rotationQueue.size() < MAX_QUEUE_SIZE)
+        rotationQueue.push(newPair);
+}
+
+/**
+ *
+ * @return the angle and axis of the rotation if a rotation should happen, pair {0, -1} otherwise.
+ */
+shared_ptr<pair<float, int>> Snake::Rotate() {
+
+    // make sure rotation queue isnt empty
+    if (rotationQueue.empty())
+        return nullptr;
+//    // make sure rotation queue isnt filled
+//    if (rotationQueue.size() > 100)
+//        return didNotRotate;
+    // check that the needed position to rotate is here
+    shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> poppedPair = rotationQueue.front();
+
+    auto sss = snakeModel->GetTranslation();
+    auto hhh = poppedPair->first;
+    if (!SamePos(snakeModel->GetTranslation(), poppedPair->first))
+        return nullptr;
+
+    // pop from the queue
+    rotationQueue.pop();
+
+    // check for child snake
+    if (child != nullptr){
+//        cout << "the needed position to rotate: " << poppedPair.first << "\n" << endl;
+//        cout << "my position: " << snakeModel->GetTranslation() << "\n" << endl;
+        child->AddRotation(poppedPair);
+    }
+
+    return poppedPair->second;
+}
+
+void Snake::ClearQueue() {
+    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>>> empty;
+    swap(rotationQueue, empty);
+
+    if (child != nullptr)
+        child->ClearQueue();
 }
