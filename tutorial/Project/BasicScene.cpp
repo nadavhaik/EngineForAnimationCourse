@@ -460,7 +460,8 @@ void BasicScene::AddPrize(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
     root->AddChild(newModel);
-    newModel->Translate(RandomSpawnPoint());
+//    newModel->Translate(RandomSpawnPoint());
+    newModel->Translate(Vec3(0,0,-10));
     newModel->Scale(0.02f, Axis::XYZ);
 
     newModel->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
@@ -481,8 +482,10 @@ void BasicScene::AddPrize(){
 void BasicScene::SwitchCamera() {
     switch (cameraType) {
         case CameraType::TPS:
-            cameraType = CameraType::POV;
-            camera = povCam;
+//            cameraType = CameraType::POV;
+//            camera = povCam;
+            cameraType = CameraType::TOP_VIEW;
+            camera = topViewCam;
             break;
         case CameraType::POV:
             cameraType = CameraType::TOP_VIEW;
