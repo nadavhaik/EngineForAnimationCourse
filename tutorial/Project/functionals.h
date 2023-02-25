@@ -11,7 +11,7 @@
 
 namespace functionals {
     template<typename T1, typename T2>
-    std::vector<T2> map(std::vector<T1> list, const std::function<T1(T2)> &mapper) {
+    std::vector<T2> map(std::vector<T1> list, const std::function<T2(T1)> &mapper) {
         std::vector<T2> mapped;
         std::transform(list.begin(), list.end(), std::back_inserter(mapped), mapper);
         return mapped;

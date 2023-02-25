@@ -28,6 +28,8 @@
 #include "igl/write_triangle_mesh.h"
 #include "types_macros.h"
 #include "BoundableModel.h"
+#include "SkinnedSnakeModel.h"
+
 
 // #include "AutoMorphingModel.h"
 
@@ -96,6 +98,22 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     for(int i=0; i<16; i++) {
         AddToTail();
     }
+
+//    (std::string name, std::shared_ptr<cg3d::Mesh> mesh,
+//            std::shared_ptr<cg3d::Material> material, std::vector<std::shared_ptr<Model>> joints);
+    auto allNodes = functionals::map<SnakeNode, ModelPtr>(snakeNodes, [](SnakeNode node) {return node.model;});
+
+    snakeSkin = SkinnedSnakeModel::Create("Snake skin", snakeMesh, snakeMaterial, allNodes);
+
+    snakeSkin->Skin();
+    snakeSkin->Scale(3.5, Axis::Z);
+    snakeSkin->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+    snakeSkin->Translate(-10, Axis::Z);
+    snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
+//    snakeRoot->AddChild(snakeSkin);
+    root->AddChild(snakeSkin);
+
+
 
 
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
@@ -259,7 +277,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     }
 }
 
-#define MOVEMENT_DISTANCE 0.05f
 
 
 void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
@@ -306,6 +323,7 @@ void BasicScene::PeriodicFunction() {
         node->MoveForward();
     }
     DetectCollisions();
+    snakeSkin->Skin();
 
     mtx.unlock();
 

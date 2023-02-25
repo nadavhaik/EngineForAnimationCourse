@@ -8,6 +8,7 @@
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
+#include "SkinnedSnakeModel.h"
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -20,7 +21,7 @@
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
 
 
-#define MOVEMENT_DISTANCE 0.03f
+#define MOVEMENT_DISTANCE 0.10f
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
@@ -72,7 +73,7 @@ private:
     std::vector<SnakeNode> snakeNodes;
     vector<shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
-
+    std::shared_ptr<SkinnedSnakeModel> snakeSkin;
     std::shared_ptr<Camera> topViewCam;
     std::shared_ptr<Camera> povCam;
     std::shared_ptr<Camera> tpsCam;
