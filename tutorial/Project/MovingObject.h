@@ -71,10 +71,9 @@ private:
 
 #define MovingPtr std::shared_ptr<MovingObject>
 
-class Snake: MovingObject{
+class Snake: MovingObject {
 public:
-    Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent, shared_ptr<Movable> root, float _h):
-        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){};
+    Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent, shared_ptr<Movable> root, float _h);
 
     bool IsHead(){return type == HEAD;};
     bool IsTail(){return type == TAIL;};
@@ -91,6 +90,7 @@ public:
     shared_ptr<RotationCommand> Rotate();
     queue<shared_ptr<FutureRotation>> rotationsQueue;
     bool InRotation();
+    shared_ptr<NodeModel> invisibleBrother;
 
 private:
     shared_ptr<NodeModel> snakeModel;

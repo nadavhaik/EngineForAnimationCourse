@@ -104,6 +104,7 @@ void Snake::MoveForward() {
 
     // Translate to p2
     snakeModel->Translate((velocity / 30.0f) * p2);
+    invisibleBrother->Translate((velocity / 30.0f) * p2);
     // or
     // Do bezier
 }
@@ -156,4 +157,12 @@ void Snake::ClearQueue() {
 
 bool Snake::InRotation() {
     return !rotationsQueue.empty();
+}
+
+Snake::Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent,
+             shared_ptr<Movable> root, float _h):
+        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){
+  invisibleBrother = NodeModel::Create("invisible model", _model->GetMesh(0), _model->material);
+  invisibleBrother->SetTransform(_model->GetTransform());
+
 }

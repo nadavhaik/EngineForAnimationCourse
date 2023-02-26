@@ -418,6 +418,9 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);
+        snake->invisibleBrother->Rotate(angle, turnAxis);
+
+        float distance = algebra::distance(snake->GetNodeModel()->GetTranslation(), snake->invisibleBrother->GetTranslation());
 
 
         auto x = "";
