@@ -85,7 +85,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     tpsCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 8.0, Axis::Z);
     tpsCam->Translate({0, 5, -7});
 
-    Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Vector3f(0,0,1), nullptr, root, 0.0f);
+    Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Eigen::Vector3f (0,0,1), nullptr, root, 0.0f);
     snakeNodes.push_back(make_shared<Snake>(head));
 
 
@@ -209,6 +209,9 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
+            case GLFW_KEY_1:
+                Hit();
+                break;
             case GLFW_KEY_TAB:
                 SwitchCamera();
                 break;
@@ -226,23 +229,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 break;
             case GLFW_KEY_RIGHT: case GLFW_KEY_D:
                 Turn(RIGHT);
-                break;
-            case GLFW_KEY_1:
-//                if( pickedIndex > 0)
-//                  pickedIndex--;
-                break;
-            case GLFW_KEY_2:
-
-                break;
-            case GLFW_KEY_3:
-                if( tipIndex >= 0)
-                {
-
-                  tipIndex--;
-                }
-                break;
-            case GLFW_KEY_4:
-
                 break;
             case GLFW_KEY_SPACE:
                 AddToTail(snakeNodes.back());
@@ -351,7 +337,7 @@ void BasicScene::Turn(MovementDirection type){
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
     auto rotation = make_shared<pair<double, int>>(make_pair(angle, axis));
 
-    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<double, int>>>>
+    auto newTurn = make_shared<pair<Eigen::Vector3f  , shared_ptr<pair<double, int>>>>
             (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<double, int>>(make_pair(angle, axis))));
 
     snakeNodes[0]->AddRotation(newTurn);
@@ -409,7 +395,7 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
 
     newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
-    Snake newSnake(TAIL, newNode, newNode->GetRotation() * Vector3f(0,0,1), parent, root, (float)heading);
+    Snake newSnake(TAIL, newNode, newNode->GetRotation() * Eigen::Vector3f (0,0,1), parent, root, (float)heading);
     // add as child of the previous snack (the back of snake list)
     auto add = make_shared<Snake>(newSnake);
     parent->AddChild(add);
@@ -442,7 +428,7 @@ void BasicScene::RegisterPeriodic(int interval, const std::function<void(void)>&
 
 
 
-Vector3f BasicScene::RandomSpawnPoint(){
+Eigen::Vector3f  BasicScene::RandomSpawnPoint(){
 
     // roll signs
     float xSign = RollRandomAB(0,1) < 0.5 ? -1 : 1;
@@ -454,7 +440,7 @@ Vector3f BasicScene::RandomSpawnPoint(){
     // roll ver
     float y = ySign * RollRandomAB(0, VerticalBorder);
 
-    Vector3f spawnPoint(x, y, -10);
+    Eigen::Vector3f  spawnPoint(x, y, -10);
     return spawnPoint;
 }
 
@@ -475,7 +461,7 @@ void BasicScene::AddPrize(){
 
     auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
 
-    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Vector3f(0,0,1), velocity, root);
+    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Eigen::Vector3f (0,0,1), velocity, root);
 
     movingObjects.push_back(make_shared<MovingObject>(n));
 

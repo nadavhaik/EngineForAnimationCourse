@@ -1,18 +1,18 @@
 #include <memory>
 #include "SoundHandler.h"
+#include <unistd.h>
 
+static string MUSIC_PATH = "data/sounds/";
+static string BACKGROUND_MUSIC_FILE_NAME = "background_music.wav";
 
-string MUSIC_PATH = "/sounds/";
-string BACKGROUND_MUSIC_FILE_NAME = "background_music.wav";
+static string SOUND_EFFECT_PATH = "data/sounds/sound_effects/";
 
-string SOUND_EFFECT_PATH = "/sounds/sound_effects/";
+static string BUTTON_FILE_NAME = "button_sound_effect.wav";
+static string WIN_FILE_NAME = "win_sound_effect.wav";
+static string LOSE_FILE_NAME = "lose_sound_effect.wav";
 
-string BUTTON_FILE_NAME = "button_sound_effect.wav";
-string WIN_FILE_NAME = "win_sound_effect.wav";
-string LOSE_FILE_NAME = "lose_sound_effect.wav";
-
-string PRIZE_FILE_NAME = "prize_sound_effect.wav";
-string HIT_FILE_NAME = "hit_sound_effect.wav";
+static string PRIZE_FILE_NAME = "prize_sound_effect.wav";
+static string HIT_FILE_NAME = "hit_sound_effect.wav";
 
 using namespace std;
 using namespace sf;
@@ -21,9 +21,12 @@ class SoundManager {
 public:
 //    SoundManager() { InitManager(); }
     void InitManager(){
-        snakeSoundHandler = make_shared<SoundHandler>(SoundHandler());
-        backgroundSoundHandler = make_shared<SoundHandler>(SoundHandler());
-        uiSoundHandler = make_shared<SoundHandler>(SoundHandler());
+        snakeSoundHandler = make_shared<SoundHandler>();
+        backgroundSoundHandler = make_shared<SoundHandler>();
+        uiSoundHandler = make_shared<SoundHandler>();
+        char cwd[10000];
+        getcwd(cwd, sizeof (cwd));
+        std::cout << "cwd: " << cwd << std::endl;
 
         PlayBackgroundMusic();  // START PLAYING BG MUSIC RIGHT AWAY
     }

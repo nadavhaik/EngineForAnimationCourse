@@ -9,6 +9,7 @@
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
+#include <Python.h>
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -57,7 +58,7 @@ public:
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     void Rotate(shared_ptr<Snake> snake);
 
-    Vector3f RandomSpawnPoint();
+    Eigen::Vector3f RandomSpawnPoint();
     void AddPrize();
 
     float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
