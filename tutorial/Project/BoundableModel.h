@@ -33,6 +33,21 @@ protected:
 };
 #define BoundablePtr std::shared_ptr<BoundableModel>
 
+class ConstantBoundable : public BoundableModel {
+public:
+    Box GetBoundingBox() override;
+    template<typename... Args>
+    static std::shared_ptr<ConstantBoundable> Create(Args&&... args) { return std::make_shared<ConstantBoundable>(ConstantBoundable{std::forward<Args>(args)...}); };
+    void CalculateBB();
+
+private:
+    explicit ConstantBoundable(std::string name, std::shared_ptr<cg3d::Mesh> mesh, std::shared_ptr<cg3d::Material> material);
+    Box boundingBox;
+
+
+};
+
+
 class NodeModel : public BoundableModel {
 public:
     Box GetBoundingBox() override;

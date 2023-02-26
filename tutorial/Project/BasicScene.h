@@ -8,6 +8,7 @@
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
+#include "SkinnedSnakeModel.h"
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -19,8 +20,9 @@
 #define NINETY_DEGREES_IN_RADIANS 1.57079633f
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
 
+#define MOVEMENT_DISTANCE 0.10f
 
-#define MOVEMENT_DISTANCE 0.03f
+
 #include "algebra.h"
 
 
@@ -65,6 +67,7 @@ public:
     std::shared_ptr<Movable> root;
     void RemoveMoving(shared_ptr<MovingObject> moving);
     void FollowHeadWithCamera();
+    bool InBox(const BoundablePtr &model);
 
 private:
     void Turn(MovementDirection type);
@@ -72,10 +75,11 @@ private:
     std::vector<shared_ptr<Snake>> snakeNodes;
     vector<shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
-
+    std::shared_ptr<SkinnedSnakeModel> snakeSkin;
     std::shared_ptr<Camera> topViewCam;
     std::shared_ptr<Camera> povCam;
     std::shared_ptr<Camera> tpsCam;
+    std::shared_ptr<ConstantBoundable> backgroundBox;
 
     int pickedIndex = 0;
     int tipIndex = 0;
@@ -90,6 +94,7 @@ private:
 
     std::shared_ptr<cg3d::Mesh> prizeMesh;
     std::shared_ptr<cg3d::Material> prizeMaterial;
+    std::shared_ptr<cg3d::Mesh> nodeMesh;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;

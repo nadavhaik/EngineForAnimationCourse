@@ -12,7 +12,7 @@ namespace cg3d
 
 struct MeshData
 {
-    const Eigen::MatrixXd vertices; // Vertices of the mesh (#V x 3)
+    Eigen::MatrixXd vertices; // Vertices of the mesh (#V x 3)
     const Eigen::MatrixXi faces; // Faces of the mesh (#F x 3)
     const Eigen::MatrixXd vertexNormals; // One normal per vertex
     const Eigen::MatrixXd textureCoords; // UV vertices
