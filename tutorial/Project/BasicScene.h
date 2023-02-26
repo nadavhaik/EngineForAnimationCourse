@@ -20,8 +20,11 @@
 #define NINETY_DEGREES_IN_RADIANS 1.57079633f
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
 
-
 #define MOVEMENT_DISTANCE 0.10f
+
+
+#include "algebra.h"
+
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
@@ -47,18 +50,15 @@ public:
     void CursorPosCallback(cg3d::Viewport* viewport, int x, int y, bool dragging, int* buttonState)  override;
     void KeyCallback(cg3d::Viewport* viewport, int x, int y, int key, int scancode, int action, int mods) override;
     void PeriodicFunction();
-    void TurnUp();
-    void TurnDown();
-    void TurnRight();
-    void TurnLeft();
     void SwitchCamera();
-    void AddToTail();
+    void AddToTail(shared_ptr<Snake> parent);
     void ShortenSnake();
     static bool ModelsCollide(BoundablePtr m1, BoundablePtr m2);
     void DetectCollisions();
     void RegisterPeriodic(int interval, const std::function<void(void)>& func);
     void AddViewportCallback(cg3d::Viewport* _viewport) override;
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
+    void Rotate(shared_ptr<Snake> snake);
 
     Vector3f RandomSpawnPoint();
     void AddPrize();
@@ -70,7 +70,9 @@ public:
     bool InBox(const BoundablePtr &model);
 
 private:
-    std::vector<SnakeNode> snakeNodes;
+    void Turn(MovementDirection type);
+
+    std::vector<shared_ptr<Snake>> snakeNodes;
     vector<shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
     std::shared_ptr<SkinnedSnakeModel> snakeSkin;
@@ -98,4 +100,5 @@ private:
     float headHeading = NINETY_DEGREES_IN_RADIANS;
     std::mutex mtx;
     cg3d::Viewport* viewport = nullptr;
+    int lastQueueSize;
 };
