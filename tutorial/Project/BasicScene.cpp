@@ -395,16 +395,8 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
 
     root->AddChild(newNode);
     newNode->Rotate(_parent->GetRotation());
-    newNode->Translate(_parent->GetTranslation());
+    newNode->Translate(_parent->GetTranslation() - _parent->GetRotation() * Vec3(0, 0, 1));
 
-
-    float xTrans = cos(heading);
-    float yTrans = sin(heading);
-
-    Vec3 diag = _parent->GetDiag();
-//    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
-
-    newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     Snake newSnake(TAIL, newNode, newNode->GetRotation() * Vector3f(0,0,1), parent, root, (float)heading);
     // add as child of the previous snack (the back of snake list)
