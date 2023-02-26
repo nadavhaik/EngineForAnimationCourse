@@ -346,10 +346,10 @@ void BasicScene::Turn(MovementDirection type){
     }
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
-    auto rotation = make_shared<pair<float, int>>(make_pair(angle, axis));
+    auto rotation = make_shared<pair<double, int>>(make_pair(angle, axis));
 
-    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<float, int>>>>
-            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<float, int>>(make_pair(angle, axis))));
+    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<double, int>>>>
+            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<double, int>>(make_pair(angle, axis))));
 
     snakeNodes[0]->AddRotation(newTurn);
 
@@ -359,7 +359,7 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
     // fix snake rotation queue
 
-    shared_ptr<pair<float, int>> rotation = snake->Rotate();
+    shared_ptr<pair<double, int>> rotation = snake->Rotate();
 
 //    // if shouldnt rotate, safe return
 //    if (rotation.second == -1)

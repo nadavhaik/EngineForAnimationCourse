@@ -47,16 +47,19 @@ Vector3f NormalBetweenTwoVectors(Vector3f a, Vector3f b){
 
 bool SamePos(Vec3 a, Vec3 b){
     Vec3 diff = b - a;
-    float delta = 1e-3;
-    for (int i = 0; i < 3; i++){
-        auto diffSign = sign(diff[i]);
-        auto diffPositive = diff[i] < delta;
-        auto diffNegative = -1 * diff[i] < delta;
-        bool isDiffIOk = sign(diff[i]) > 0 ? diffPositive : diffNegative;
-        if (!isDiffIOk)
-            return false;
-//        cout<<delta<<"\n"<<endl;
-    }
+    float delta = 0.05;
+    float abs = std::sqrt(diff.x() * diff.x() + diff.y() * diff.y() + diff.z() * diff.z());
+    return abs < delta;
+//    for (int i = 0; i < 3; i++){
+//        float abs = diff.array().abs();
+//        auto diffSign = sign(diff[i]);
+//        auto diffPositive = diff[i] < delta;
+//        auto diffNegative = -1 * diff[i] < delta;
+//        bool isDiffIOk = sign(diff[i]) > 0 ? diffPositive : diffNegative;
+//        if (!isDiffIOk)
+//            return false;
+////        cout<<delta<<"\n"<<endl;
+//    }
     return true;
 //    sign(diff.z()) > 1 ? diff.z() < delta : -1 * diff.z() > delta;
 
@@ -105,7 +108,7 @@ void Snake::MoveForward() {
     // Do bezier
 }
 
-void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> newPair) {
+void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair) {
     if (rotationQueue.size() < MAX_QUEUE_SIZE)
         rotationQueue.push(newPair);
 }
@@ -114,7 +117,7 @@ void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>>
  *
  * @return the angle and axis of the rotation if a rotation should happen, pair {0, -1} otherwise.
  */
-shared_ptr<pair<float, int>> Snake::Rotate() {
+shared_ptr<pair<double, int>> Snake::Rotate() {
 
     // make sure rotation queue isnt empty
     if (rotationQueue.empty())
@@ -123,7 +126,7 @@ shared_ptr<pair<float, int>> Snake::Rotate() {
 //    if (rotationQueue.size() > 100)
 //        return didNotRotate;
     // check that the needed position to rotate is here
-    shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> poppedPair = rotationQueue.front();
+    shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> poppedPair = rotationQueue.front();
 
     auto sss = snakeModel->GetTranslation();
     auto hhh = poppedPair->first;
@@ -144,7 +147,7 @@ shared_ptr<pair<float, int>> Snake::Rotate() {
 }
 
 void Snake::ClearQueue() {
-    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>>> empty;
+    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> empty;
     swap(rotationQueue, empty);
 
     if (child != nullptr)

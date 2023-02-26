@@ -67,10 +67,10 @@ public:
     float heading;
     shared_ptr<NodeModel> GetNodeModel(){return snakeModel;};
     void MoveForward();
-    void AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>> newPair);
+    void AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair);
     void ClearQueue();
-    shared_ptr<pair<float, int>> Rotate();
-    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<float, int>>>>> rotationQueue;
+    shared_ptr<pair<double, int>> Rotate();
+    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> rotationQueue;
 
 private:
     shared_ptr<NodeModel> snakeModel;
