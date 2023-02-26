@@ -1,6 +1,6 @@
 #include <memory>
 #include "SoundHandler.h"
-#include <unistd.h>
+//#include <unistd.h>
 
 static string MUSIC_PATH = "data/sounds/";
 static string BACKGROUND_MUSIC_FILE_NAME = "background_music.wav";
@@ -25,7 +25,7 @@ public:
         backgroundSoundHandler = make_shared<SoundHandler>();
         uiSoundHandler = make_shared<SoundHandler>();
         char cwd[10000];
-        getcwd(cwd, sizeof (cwd));
+//        getcwd(cwd, sizeof (cwd));
         std::cout << "cwd: " << cwd << std::endl;
 
         PlayBackgroundMusic();  // START PLAYING BG MUSIC RIGHT AWAY

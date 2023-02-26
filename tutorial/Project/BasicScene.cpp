@@ -210,7 +210,19 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
             case GLFW_KEY_1:
+                EatPrize();
+                break;
+            case GLFW_KEY_2:
                 Hit();
+                break;
+            case GLFW_KEY_3:
+                Win();
+                break;
+            case GLFW_KEY_4:
+                Die();
+                break;
+            case GLFW_KEY_5:
+                ButtonPress();
                 break;
             case GLFW_KEY_TAB:
                 SwitchCamera();

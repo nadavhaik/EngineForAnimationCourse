@@ -9,7 +9,7 @@
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
-#include <Python.h>
+//#include <Python.h>
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -74,7 +74,8 @@ private:
 
     void Hit(){
         soundManager.PlayHitSoundEffect();
-        ShortenSnake();
+        // TODO
+        //        ShortenSnake();
     }
     void EatPrize(){
         soundManager.PlayPrizeSoundEffect();
@@ -86,6 +87,10 @@ private:
     }
     void Die(){
         soundManager.PlayLoseSoundEffect();
+        // TODO
+    }
+    void ButtonPress(){
+        soundManager.PlayButtonSoundEffect();
         // TODO
     }
     void Mute(){soundManager.MuteAll();};
