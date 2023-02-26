@@ -70,6 +70,7 @@ public:
     void AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair);
     void ClearQueue();
     shared_ptr<pair<double, int>> Rotate();
+
     queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> rotationQueue;
 
 private:

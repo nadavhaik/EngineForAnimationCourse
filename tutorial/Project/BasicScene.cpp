@@ -37,6 +37,9 @@ using namespace cg3d;
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
+    soundManager.InitManager();
+
+
     povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
     tpsCam = Camera::Create( "tps", 90.0f, float(width) / height, near, far);
     topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
@@ -516,3 +519,5 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
     Scene::AddViewportCallback(viewport);
 }
+
+

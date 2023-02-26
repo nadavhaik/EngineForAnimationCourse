@@ -5,6 +5,7 @@
 #include <utility>
 #include "BoundableModel.h"
 #include "MovingObject.h"
+#include "SoundManager.h"
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
@@ -64,7 +65,31 @@ public:
     void RemoveMoving(shared_ptr<MovingObject> moving);
     void FollowHeadWithCamera();
 
+    SoundManager soundManager;
+
+
+
 private:
+
+    void Hit(){
+        soundManager.PlayHitSoundEffect();
+        ShortenSnake();
+    }
+    void EatPrize(){
+        soundManager.PlayPrizeSoundEffect();
+        // TODO
+    }
+    void Win(){
+        soundManager.PlayWinSoundEffect();
+        // TODO
+    }
+    void Die(){
+        soundManager.PlayLoseSoundEffect();
+        // TODO
+    }
+    void Mute(){soundManager.MuteAll();};
+    void UnMute(){soundManager.UnMuteAll();};
+
     void Turn(MovementDirection type);
 
     std::vector<shared_ptr<Snake>> snakeNodes;
@@ -94,4 +119,5 @@ private:
     std::mutex mtx;
     cg3d::Viewport* viewport = nullptr;
     int lastQueueSize;
+
 };

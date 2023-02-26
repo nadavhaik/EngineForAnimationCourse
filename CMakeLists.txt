@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.19)
+
 set(CMAKE_BUILD_TYPE Debug)
 
 # Toggles the use of the hunter package manager
