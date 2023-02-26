@@ -104,13 +104,20 @@ void SkinnedSnakeModel::Skin() {
     igl::deform_skeleton(Cp, BE, T, CT, BET);
 
 
-    Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Zero(U.rows(),2);
-//    Eigen::MatrixXd Vout;
-//    Eigen::MatrixXi Fout;
+    Eigen::MatrixXd Vout;
+    Eigen::MatrixXi F;
     Eigen::MatrixXi Eout;
-//    igl::triangle::triangulate(U, BET, {}, "p", Vout, Fout);
+    Eigen::MatrixXd H;
+    Eigen::MatrixXd N;
 
-    std::vector<cg3d::MeshData> newMeshDataList = {{U, originalMesh->data[0].faces, originalMesh->data[0].vertexNormals, textureCoords}};
+    H << 0, 0;
+    igl::triangle::triangulate(U, BET, H, "p", Vout, F);
+    U = Vout;
+
+    igl::per_vertex_normals(U, F, N);
+    Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Zero(U.rows(),2);
+
+    std::vector<cg3d::MeshData> newMeshDataList = {{U, F, N, textureCoords}};
     modifiedMeshList = {std::make_shared<Mesh>("modified mesh", newMeshDataList)};
 //    SetMeshList(modifiedMeshList);
 }
