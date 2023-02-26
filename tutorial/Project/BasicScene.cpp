@@ -285,7 +285,7 @@ void BasicScene::DetectCollisions() {
 void BasicScene::PeriodicFunction() {
     mtx.lock();
 
-    int size = snakeNodes[0]->rotationQueue.size();
+    int size = snakeNodes[0]->rotationsQueue.size();
 //    if (size  == MAX_QUEUE_SIZE - 1)
 //        snakeNodes[0]->ClearQueue();
     cout<<size<<"\n"<<endl;
@@ -322,36 +322,33 @@ BasicScene::~BasicScene() {
 }
 
 void BasicScene::Turn(MovementDirection type){
-    int axis;
+    Axis axis;
     float angle = SNAKE_TURN_ANGLE_RADIANS;
     switch (type){
         case RIGHT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= -1; // change angle
             snakeNodes[0]->heading += SNAKE_TURN_ANGLE_RADIANS;
             break;
         case LEFT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= 1; // dont change angle
             snakeNodes[0]->heading -= SNAKE_TURN_ANGLE_RADIANS;
             break;
         case UP:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= -1; // change angle
             break;
         case DOWN:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= 1; // dont change angle
             break;
     }
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
-    auto rotation = make_shared<pair<double, int>>(make_pair(angle, axis));
+    auto rotation = std::make_shared<RotationCommand>(axis, angle);
 
-    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<double, int>>>>
-            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<double, int>>(make_pair(angle, axis))));
-
-    snakeNodes[0]->AddRotation(newTurn);
+    snakeNodes[0]->AddRotation(rotation);
 
 }
 
@@ -359,7 +356,7 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
     // fix snake rotation queue
 
-    shared_ptr<pair<double, int>> rotation = snake->Rotate();
+    auto rotation = snake->Rotate();
 
 //    // if shouldnt rotate, safe return
 //    if (rotation.second == -1)
@@ -367,16 +364,8 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 //
     while(rotation != nullptr)
     {
-        float angle = rotation->first;
-        Axis turnAxis;
-        switch (rotation->second){
-            case 0: // if up or down
-                turnAxis = Axis::X;
-                break;
-            case 1: // if right or left
-                turnAxis = Axis::Y;
-                break;
-        }
+        float angle = rotation->angle;
+        Axis turnAxis = rotation->axis;
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);

@@ -21,6 +21,8 @@
 
 
 #define MOVEMENT_DISTANCE 0.03f
+#include "algebra.h"
+
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};

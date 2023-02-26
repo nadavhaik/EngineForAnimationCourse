@@ -66,7 +66,7 @@ bool SamePos(Vec3 a, Vec3 b){
 }
 
 void Snake::MoveForward() {
-    if (rotationQueue.size() > MAX_QUEUE_SIZE)
+    if (rotationsQueue.size() > MAX_QUEUE_SIZE)
             return;
     auto rot = GetNodeModel()->GetRotation();
 
@@ -108,48 +108,48 @@ void Snake::MoveForward() {
     // Do bezier
 }
 
-void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair) {
-    if (rotationQueue.size() < MAX_QUEUE_SIZE)
-        rotationQueue.push(newPair);
+void Snake::AddRotation(shared_ptr<RotationCommand> command) {
+    if (rotationsQueue.size() > MAX_QUEUE_SIZE) return;
+    rotationsQueue.push(std::make_shared<FutureRotation>(snakeModel->GetTranslation(), *command));
 }
 
 /**
  *
  * @return the angle and axis of the rotation if a rotation should happen, pair {0, -1} otherwise.
  */
-shared_ptr<pair<double, int>> Snake::Rotate() {
+
+
+shared_ptr<RotationCommand> Snake::Rotate() {
 
     // make sure rotation queue isnt empty
-    if (rotationQueue.empty())
+    if (rotationsQueue.empty())
         return nullptr;
-//    // make sure rotation queue isnt filled
-//    if (rotationQueue.size() > 100)
-//        return didNotRotate;
-    // check that the needed position to rotate is here
-    shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> poppedPair = rotationQueue.front();
 
-    auto sss = snakeModel->GetTranslation();
-    auto hhh = poppedPair->first;
-    if (!SamePos(snakeModel->GetTranslation(), poppedPair->first))
-        return nullptr;
+   auto nextCommand = rotationsQueue.front();
+   if(IsTail() && algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_BETWEEN_NODES) {
+       return nullptr;
+   }
+
 
     // pop from the queue
-    rotationQueue.pop();
+    rotationsQueue.pop();
+    auto commandPtr = std::make_shared<RotationCommand>(nextCommand->rotationCommand);
 
     // check for child snake
     if (child != nullptr){
 //        cout << "the needed position to rotate: " << poppedPair.first << "\n" << endl;
 //        cout << "my position: " << snakeModel->GetTranslation() << "\n" << endl;
-        child->AddRotation(poppedPair);
+        child->AddRotation(commandPtr);
     }
 
-    return poppedPair->second;
+    return commandPtr;
 }
 
 void Snake::ClearQueue() {
-    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> empty;
-    swap(rotationQueue, empty);
-
-    if (child != nullptr)
-        child->ClearQueue();
+//    rotationsQueue.c
+//    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> empty;
+//    swap(rotationQueue, empty);
+//
+//    if (child != nullptr)
+//        child->ClearQueue();
 }
