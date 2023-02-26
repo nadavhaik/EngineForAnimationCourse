@@ -13,16 +13,35 @@ enum SnakeType{HEAD, TAIL};
 #include "AutoMorphingModel.h"
 #include "BoundableModel.h"
 #include <queue>
+#include "algebra.h"
+
 
 #define HorizontalBorder 9.0f
 #define VerticalBorder 9.0f
-#define MAX_QUEUE_SIZE 100
-
+#define MAX_QUEUE_SIZE 10000
+#define DISTANCE_FOR_MIMICING_ROTATIONS 1.0f
 
 
 using namespace cg3d;
 using namespace std;
 using namespace Eigen;
+
+typedef Movable::Axis Axis;
+
+struct RotationCommand {
+    Axis axis;
+    double angle;
+    Vec3 destination;
+    RotationCommand(Axis axis, double angle, Vec3 destination): axis(axis), angle(angle), destination(destination) {};
+};
+
+struct FutureRotation {
+    Vec3 recievedAt;
+    RotationCommand rotationCommand;
+    FutureRotation(Vec3 recievedAt, RotationCommand rotationCommand):
+        recievedAt(recievedAt), rotationCommand(rotationCommand) {};
+};
+
 
 
 class MovingObject {
@@ -67,10 +86,11 @@ public:
     float heading;
     shared_ptr<NodeModel> GetNodeModel(){return snakeModel;};
     void MoveForward();
-    void AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair);
+    void AddRotation(shared_ptr<RotationCommand> command);
     void ClearQueue();
-    shared_ptr<pair<double, int>> Rotate();
-    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> rotationQueue;
+    shared_ptr<RotationCommand> Rotate();
+    queue<shared_ptr<FutureRotation>> rotationsQueue;
+    bool InRotation();
 
 private:
     shared_ptr<NodeModel> snakeModel;

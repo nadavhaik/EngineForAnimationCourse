@@ -269,7 +269,8 @@ void BasicScene::DetectCollisions() {
     for(int i=2; i<snakeNodes.size(); i++) {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
-            std::cout << "Collusion With Tail!!!" << std::endl;
+            std::cerr << "Collusion With Tail!!!" << std::endl;
+            exit(-1);
         }
     }
 
@@ -285,7 +286,7 @@ void BasicScene::DetectCollisions() {
 void BasicScene::PeriodicFunction() {
     mtx.lock();
 
-    int size = snakeNodes[0]->rotationQueue.size();
+    int size = snakeNodes[0]->rotationsQueue.size();
 //    if (size  == MAX_QUEUE_SIZE - 1)
 //        snakeNodes[0]->ClearQueue();
     cout<<size<<"\n"<<endl;
@@ -322,44 +323,53 @@ BasicScene::~BasicScene() {
 }
 
 void BasicScene::Turn(MovementDirection type){
-    int axis;
+    Axis axis;
     float angle = SNAKE_TURN_ANGLE_RADIANS;
     switch (type){
         case RIGHT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= -1; // change angle
             snakeNodes[0]->heading += SNAKE_TURN_ANGLE_RADIANS;
             break;
         case LEFT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= 1; // dont change angle
             snakeNodes[0]->heading -= SNAKE_TURN_ANGLE_RADIANS;
             break;
         case UP:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= -1; // change angle
             break;
         case DOWN:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= 1; // dont change angle
             break;
     }
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
-    auto rotation = make_shared<pair<double, int>>(make_pair(angle, axis));
+    auto rotation = std::make_shared<RotationCommand>(axis, angle, Vec3::Zero());
 
-    auto newTurn = make_shared<pair<Vector3f , shared_ptr<pair<double, int>>>>
-            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<double, int>>(make_pair(angle, axis))));
+    snakeNodes[0]->AddRotation(rotation);
 
-    snakeNodes[0]->AddRotation(newTurn);
+}
 
+bool AlmostEqual(Mat3x3 m1, Mat3x3 m2) {
+    float maxDelta = 100 * std::numeric_limits<float>::min();
+    for(int i=0; i<3; i++) {
+        for(int j=0; j<3; j++) {
+            if(std::abs(m1(i, j) - m2(i, j)) > maxDelta) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
     // fix snake rotation queue
 
-    shared_ptr<pair<double, int>> rotation = snake->Rotate();
+    auto rotation = snake->Rotate();
 
 //    // if shouldnt rotate, safe return
 //    if (rotation.second == -1)
@@ -367,21 +377,49 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 //
     while(rotation != nullptr)
     {
-        float angle = rotation->first;
-        Axis turnAxis;
-        switch (rotation->second){
-            case 0: // if up or down
-                turnAxis = Axis::X;
-                break;
-            case 1: // if right or left
-                turnAxis = Axis::Y;
-                break;
-        }
+        float angle = rotation->angle;
+        Axis turnAxis = rotation->axis;
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);
+
+
         auto x = "";
+        auto prevRot = rotation;
         rotation = snake->Rotate();
+
+//         fine tuning for tails:
+        if(rotation == nullptr && snake->IsTail() && !snake->parent->InRotation() &&
+                AlmostEqual(snake->GetNodeModel()->GetRotation(), snake->parent->GetNodeModel()->GetRotation())) {
+//            continue;
+//                snake->GetNodeModel()->GetRotation().isApprox(snake->parent->GetNodeModel()->GetRotation())) {
+
+            Vec3 delta = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
+            Vec3 deltaInSystem = snake->parent->GetNodeModel()->GetRotation().inverse() * delta;
+
+            Vec3 fixedDelta = snake->parent->GetNodeModel()->GetRotation() * Vec3(deltaInSystem.x(), deltaInSystem.y(), 0);
+
+            std::cout << "delta: (" << delta.x() << "," << delta.y() << ","
+                      << delta.z() << ")" << std::endl;
+            std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
+                << deltaInSystem.z() << ")" << std::endl;
+
+            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
+            if(deviation > 0.01) return;
+
+            snake->GetNodeModel()->Translate(fixedDelta);
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
+//            snake->GetNodeModel()->Translate({delta.x(), delta.y(), delta.z()});
+
+//            Vec3 parentPos = snake->parent->GetNodeModel()->GetTranslation();
+//            Vec3 deltaFromParent = parentPos - snake->GetNodeModel()->GetTranslation();
+
+//            float distanceFromParent = algebra::distance(parentPos, deltaFromParent);
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(),
+//                                                     {0, 0, 1.0f - distanceFromParent});
+//            snake->GetNodeModel()->SetCenter(snake->GetNodeModel()->GetRotation() * ((1.0f - distanceFromParent) * deltaFromParent));
+//            snake->GetNodeModel()->Translate({0, 0, 1.0f - distanceFromParent});
+        }
     }
 
 
@@ -397,6 +435,7 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
     newNode->Rotate(_parent->GetRotation());
     newNode->Translate(_parent->GetTranslation() - _parent->GetRotation() * Vec3(0, 0, 1));
 
+    Vec3 diag = _parent->GetDiag();
 
     Snake newSnake(TAIL, newNode, newNode->GetRotation() * Vector3f(0,0,1), parent, root, (float)heading);
     // add as child of the previous snack (the back of snake list)
