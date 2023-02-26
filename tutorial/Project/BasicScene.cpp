@@ -120,7 +120,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
 //    (std::string name, std::shared_ptr<cg3d::Mesh> mesh,
 //            std::shared_ptr<cg3d::Material> material, std::vector<std::shared_ptr<Model>> joints);
-    auto allNodes = functionals::map<SnakeNode, ModelPtr>(snakeNodes, [](SnakeNode node) {return node.model;});
+    auto allNodes = functionals::map<shared_ptr<Snake>, ModelPtr>(snakeNodes, [](shared_ptr<Snake> node) {return node->GetNodeModel();});
 
     snakeSkin = SkinnedSnakeModel::Create("Snake skin", snakeMesh, snakeMaterial, allNodes);
 
@@ -130,7 +130,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     snakeSkin->Translate(-10, Axis::Z);
     snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
 //    snakeRoot->AddChild(snakeSkin);
-    root->AddChild(snakeSkin);
+//    root->AddChild(snakeSkin);
 
 
 
@@ -314,7 +314,8 @@ void BasicScene::DetectCollisions() {
     }
 
     if(!InBox(head)) {
-        std::cout << "Head is not in box!" << std::endl;
+        std::cerr << "Head is not in box!" << std::endl;
+        exit(-1);
     }
 }
 
@@ -381,13 +382,6 @@ void BasicScene::Turn(MovementDirection type){
             angle *= 1; // dont change angle
             break;
     }
-void BasicScene::TurnUp() {
-//    if(cameraType == TOP_VIEW) {
-//        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-//    } else {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-//    }
-//    FollowHeadWithCamera();
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
     auto rotation = std::make_shared<RotationCommand>(axis, angle, Vec3::Zero());
@@ -409,38 +403,7 @@ bool AlmostEqual(Mat3x3 m1, Mat3x3 m2) {
 }
 
 void BasicScene::Rotate(shared_ptr<Snake> snake) {
-=======
-void BasicScene::TurnDown() {
-//    if(cameraType == TOP_VIEW) {
-//        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-//    } else {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-//    }
-//    FollowHeadWithCamera();
 
-}
-
-void BasicScene::TurnRight() {
-//    headHeading -= NINETY_DEGREES_IN_RADIANS;
-//    if(cameraType == TOP_VIEW) {
-//        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-//    } else {
-        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-//    }
-//    FollowHeadWithCamera();
-    snakeNodes[0].heading += SNAKE_TURN_ANGLE_RADIANS;
-}
-
-void BasicScene::TurnLeft() {
-//    headHeading += NINETY_DEGREES_IN_RADIANS;
-//    if(cameraType == TOP_VIEW) {
-//        snakeNodes[0].model->Rotate(-SNAKE_TURN_ANGLE_RADIANS, Axis::X);
-//    } else {
-        snakeNodes[0].model->Rotate(SNAKE_TURN_ANGLE_RADIANS, Axis::Y);
-//    }
-//    FollowHeadWithCamera();
-
-    // fix snake rotation queue
 
     auto rotation = snake->Rotate();
 
@@ -452,9 +415,6 @@ void BasicScene::TurnLeft() {
     {
         float angle = rotation->angle;
         Axis turnAxis = rotation->axis;
-    auto newNode = NodeModel::Create("node", nodeMesh, snakeMaterial);
-    std::shared_ptr<NodeModel> parent = snakeNodes.back().model;
-    double heading = snakeNodes.back().heading;
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);

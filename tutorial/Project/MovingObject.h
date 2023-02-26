@@ -74,7 +74,7 @@ private:
 class Snake: MovingObject{
 public:
     Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent, shared_ptr<Movable> root, float _h):
-        MovingObject(SNAKE, nullptr, _direction, 1, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){};
+        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){};
 
     bool IsHead(){return type == HEAD;};
     bool IsTail(){return type == TAIL;};
