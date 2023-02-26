@@ -15,10 +15,11 @@ enum SnakeType{HEAD, TAIL};
 #include <queue>
 #include "algebra.h"
 
+
 #define HorizontalBorder 9.0f
 #define VerticalBorder 9.0f
 #define MAX_QUEUE_SIZE 10000
-#define DISTANCE_BETWEEN_NODES 1.0f
+#define DISTANCE_FOR_MIMICING_ROTATIONS 1.0f
 
 
 using namespace cg3d;
@@ -30,7 +31,8 @@ typedef Movable::Axis Axis;
 struct RotationCommand {
     Axis axis;
     double angle;
-    RotationCommand(Axis axis, double angle): axis(axis), angle(angle) {};
+    Vec3 destination;
+    RotationCommand(Axis axis, double angle, Vec3 destination): axis(axis), angle(angle), destination(destination) {};
 };
 
 struct FutureRotation {
@@ -88,6 +90,7 @@ public:
     void ClearQueue();
     shared_ptr<RotationCommand> Rotate();
     queue<shared_ptr<FutureRotation>> rotationsQueue;
+    bool InRotation();
 
 private:
     shared_ptr<NodeModel> snakeModel;

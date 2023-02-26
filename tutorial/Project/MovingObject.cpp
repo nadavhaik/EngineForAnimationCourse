@@ -126,7 +126,7 @@ shared_ptr<RotationCommand> Snake::Rotate() {
         return nullptr;
 
    auto nextCommand = rotationsQueue.front();
-   if(IsTail() && algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_BETWEEN_NODES) {
+   if(IsTail() && algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_FOR_MIMICING_ROTATIONS) {
        return nullptr;
    }
 
@@ -139,7 +139,7 @@ shared_ptr<RotationCommand> Snake::Rotate() {
     if (child != nullptr){
 //        cout << "the needed position to rotate: " << poppedPair.first << "\n" << endl;
 //        cout << "my position: " << snakeModel->GetTranslation() << "\n" << endl;
-        child->AddRotation(commandPtr);
+        child->AddRotation(std::make_shared<RotationCommand>(commandPtr->axis, commandPtr->angle, snakeModel->GetTranslation()));
     }
 
     return commandPtr;
@@ -152,4 +152,8 @@ void Snake::ClearQueue() {
 //
 //    if (child != nullptr)
 //        child->ClearQueue();
+}
+
+bool Snake::InRotation() {
+    return !rotationsQueue.empty();
 }

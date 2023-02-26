@@ -1,7 +1,7 @@
 //
 // Created by nadavh on 2/26/23.
 //
-#pragma once
+//#pragma once
 #include <Eigen/Core>
 #include "types_macros.h"
 

@@ -346,10 +346,22 @@ void BasicScene::Turn(MovementDirection type){
     }
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
-    auto rotation = std::make_shared<RotationCommand>(axis, angle);
+    auto rotation = std::make_shared<RotationCommand>(axis, angle, Vec3::Zero());
 
     snakeNodes[0]->AddRotation(rotation);
 
+}
+
+bool AlmostEqual(Mat3x3 m1, Mat3x3 m2) {
+    float maxDelta = 100 * std::numeric_limits<float>::min();
+    for(int i=0; i<3; i++) {
+        for(int j=0; j<3; j++) {
+            if(std::abs(m1(i, j) - m2(i, j)) > maxDelta) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void BasicScene::Rotate(shared_ptr<Snake> snake) {
@@ -369,8 +381,32 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);
+
+
         auto x = "";
+        auto prevRot = rotation;
         rotation = snake->Rotate();
+
+//         fine tuning for tails:
+        if(rotation == nullptr && snake->IsTail() && !snake->parent->InRotation() &&
+                AlmostEqual(snake->GetNodeModel()->GetRotation(), snake->parent->GetNodeModel()->GetRotation())) {
+//            continue;
+//                snake->GetNodeModel()->GetRotation().isApprox(snake->parent->GetNodeModel()->GetRotation())) {
+
+            Vec3 fixedCenter = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
+            snake->GetNodeModel()->Translate({fixedCenter.x(), fixedCenter.y(), fixedCenter.z()});
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
+//            snake->GetNodeModel()->Translate({fixedCenter.x(), fixedCenter.y(), fixedCenter.z()});
+
+//            Vec3 parentPos = snake->parent->GetNodeModel()->GetTranslation();
+//            Vec3 deltaFromParent = parentPos - snake->GetNodeModel()->GetTranslation();
+
+//            float distanceFromParent = algebra::distance(parentPos, deltaFromParent);
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(),
+//                                                     {0, 0, 1.0f - distanceFromParent});
+//            snake->GetNodeModel()->SetCenter(snake->GetNodeModel()->GetRotation() * ((1.0f - distanceFromParent) * deltaFromParent));
+//            snake->GetNodeModel()->Translate({0, 0, 1.0f - distanceFromParent});
+        }
     }
 
 
@@ -386,14 +422,13 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
     newNode->Rotate(_parent->GetRotation());
     newNode->Translate(_parent->GetTranslation());
 
-
-    float xTrans = cos(heading);
-    float yTrans = sin(heading);
-
     Vec3 diag = _parent->GetDiag();
-//    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
 
-    newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
+    Vec3 delta = _parent->GetRotation() * Vector3f (0, 0, -1);
+
+    newNode->Translate( delta);
+
+//    snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1)
 
     Snake newSnake(TAIL, newNode, newNode->GetRotation() * Vector3f(0,0,1), parent, root, (float)heading);
     // add as child of the previous snack (the back of snake list)
