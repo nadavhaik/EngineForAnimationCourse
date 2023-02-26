@@ -269,7 +269,8 @@ void BasicScene::DetectCollisions() {
     for(int i=2; i<snakeNodes.size(); i++) {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
-            std::cout << "Collusion With Tail!!!" << std::endl;
+            std::cerr << "Collusion With Tail!!!" << std::endl;
+            exit(-1);
         }
     }
 
@@ -393,10 +394,22 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 //            continue;
 //                snake->GetNodeModel()->GetRotation().isApprox(snake->parent->GetNodeModel()->GetRotation())) {
 
-            Vec3 fixedCenter = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
-            snake->GetNodeModel()->Translate({fixedCenter.x(), fixedCenter.y(), fixedCenter.z()});
+            Vec3 delta = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
+            Vec3 deltaInSystem = snake->parent->GetNodeModel()->GetRotation().inverse() * delta;
+
+            Vec3 fixedDelta = snake->parent->GetNodeModel()->GetRotation() * Vec3(deltaInSystem.x(), deltaInSystem.y(), 0);
+
+            std::cout << "delta: (" << delta.x() << "," << delta.y() << ","
+                      << delta.z() << ")" << std::endl;
+            std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
+                << deltaInSystem.z() << ")" << std::endl;
+
+            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
+            if(deviation > 0.01) return;
+
+            snake->GetNodeModel()->Translate(fixedDelta);
 //            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
-//            snake->GetNodeModel()->Translate({fixedCenter.x(), fixedCenter.y(), fixedCenter.z()});
+//            snake->GetNodeModel()->Translate({delta.x(), delta.y(), delta.z()});
 
 //            Vec3 parentPos = snake->parent->GetNodeModel()->GetTranslation();
 //            Vec3 deltaFromParent = parentPos - snake->GetNodeModel()->GetTranslation();

@@ -126,7 +126,7 @@ shared_ptr<RotationCommand> Snake::Rotate() {
         return nullptr;
 
    auto nextCommand = rotationsQueue.front();
-   if(IsTail() && algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_FOR_MIMICING_ROTATIONS) {
+   if(IsTail() && (nextCommand->rotationCommand.destination.isApprox(snakeModel->GetTranslation()) || algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_FOR_MIMICING_ROTATIONS)) {
        return nullptr;
    }
 
