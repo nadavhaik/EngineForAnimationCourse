@@ -34,7 +34,6 @@ add_subdirectory(Assignment3)
 add_subdirectory(Example1)
 add_subdirectory(Project)
 add_subdirectory(DualQuaternionSkinningTutorial)
-add_subdirectory(TriangleTutorial)
 
 
 
