@@ -22,10 +22,16 @@ float angleBetweenVecs(Vector3f a, Vector3f b){
     return acos(dot/sqrt(lenSq1 * lenSq2));
 }
 
+#define epsilon 17.0f
+
 void MovingObject::MoveForward() {
     float deltaFromBorder = 0;
     auto model = GetModel();
-    model->Translate((velocity/5) * direction);
+    if (IsPrize())
+        model->Translate((velocity/epsilon) * direction);
+    if (IsBomb())
+        model->Translate((velocity/(2 * epsilon)) * direction);
+
 
 //    if (IsPrize())
 //    {
@@ -104,7 +110,7 @@ void Snake::MoveForward() {
 
 
     // Translate to p2
-    snakeModel->Translate((velocity / 30.0f) * p2);
+    snakeModel->Translate((velocity / epsilon) * p2);
     // or
     // Do bezier
 }

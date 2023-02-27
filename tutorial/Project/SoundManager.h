@@ -24,9 +24,9 @@ public:
         snakeSoundHandler = make_shared<SoundHandler>();
         backgroundSoundHandler = make_shared<SoundHandler>();
         uiSoundHandler = make_shared<SoundHandler>();
-        char cwd[10000];
+//        char cwd[10000];
 //        getcwd(cwd, sizeof (cwd));
-        std::cout << "cwd: " << cwd << std::endl;
+//        std::cout << "cwd: " << cwd << std::endl;
 
         PlayBackgroundMusic();  // START PLAYING BG MUSIC RIGHT AWAY
     }
@@ -57,12 +57,14 @@ public:
         else        MuteAll();
     }
     void MuteAll(){
+        muted = true;
         snakeSoundHandler->Mute();
         backgroundSoundHandler->Mute();
         uiSoundHandler->Mute();
     }
 
     void UnMuteAll(){
+        muted = false;
         snakeSoundHandler->UnMute();
         backgroundSoundHandler->UnMute();
         uiSoundHandler->UnMute();

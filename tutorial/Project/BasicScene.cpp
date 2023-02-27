@@ -64,24 +64,41 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     background->SetStatic();
 
 
-    auto program = std::make_shared<Program>("shaders/phongShader");
-    auto program1 = std::make_shared<Program>("shaders/pickingShader");
+    auto snakeShader = std::make_shared<Program>("shaders/phongShader");
+    auto prizeShader = std::make_shared<Program>("shaders/PrizeShader");
+    auto bombShader = std::make_shared<Program>("shaders/BombShader");
+    auto spawnerShader = std::make_shared<Program>("shaders/SpawnerShader");
 
-    snakeMaterial = {std::make_shared<Material>("snakeMaterial", program)}; // empty snakeMaterial
-    prizeMaterial = {std::make_shared<Material>("prizeMaterial", program)}; // empty apple material
+    snakeMaterial = {std::make_shared<Material>("snakeMaterial", snakeShader)}; // empty snakeMaterial
+    prizeMaterial = {std::make_shared<Material>("prizeMaterial", prizeShader)}; // empty apple material
+    bombMaterial = {std::make_shared<Material>("bombMaterial", bombShader)}; // empty apple material
+    spawnerMaterial = {std::make_shared<Material>("spawnerMaterial", spawnerShader)};
 
+    // TODO: change textures
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
-    prizeMaterial->AddTexture(0, "textures/grass.bmp", 2); // TODO: change apple texture
+    prizeMaterial->AddTexture(0, "textures/grass.bmp", 2);
+    bombMaterial->AddTexture(0, "textures/grass.bmp", 2);
+    spawnerMaterial->AddTexture(0, "textures/grass.bmp", 2);
 
+    // TODO: change meshes
     snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
-    prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")}; // TODO: change apple mesh
+    prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")};
+    bombMesh = {IglLoader::MeshFromFiles("bomb" ,"data/ball.obj")};
+    spawnerMesh = {IglLoader::MeshFromFiles("spawner" ,"data/cube_old.obj")};
+
+    // create "spawner" at 0,0,0
+    auto spawnerRoot = Model::Create("spawner", spawnerMesh, spawnerMaterial);
+    root->AddChild(spawnerRoot);
+    spawnerRoot->Translate({0, 0, -10});
+
 
     auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
     root->AddChild(snakeRoot);
     snakeRoot->AddChild(povCam);
     snakeRoot->AddChild(tpsCam);
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
-    snakeRoot->Translate(-10, Axis::Z);
+    snakeRoot->Translate(snakeStartPo);
+//    snakeRoot->Translate(-10, Axis::Z);
     povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi, Axis::Y);
     povCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 6.0, Axis::Z);
     povCam->Translate({0, 1, -1});
@@ -110,6 +127,23 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
         AddToTail(snakeNodes.back());
     }
 
+//    // create the model for the apple
+//    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+//
+//    auto velocity = 0;
+//
+//    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Eigen::Vector3f (0,0,1), velocity, root);
+//
+//    root->AddChild(newModel);
+//
+//    movingObjects.push_back(make_shared<MovingObject>(n));
+//
+////    newModel->Translate(RandomSpawnPoint());
+//    newModel->Translate(Vec3(0,0,9999));
+//    newModel->Scale(0.02f, Axis::XYZ);
+//
+//
+//    movingObjects.push_back(std::make_shared<MovingObject>(n));
 
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
 }
@@ -134,7 +168,7 @@ void BasicScene::ResetSnake(){
     snakeRoot->AddChild(povCam);
     snakeRoot->AddChild(tpsCam);
     snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
-    snakeRoot->Translate(-10, Axis::Z);
+    snakeRoot->Translate(snakeStartPo);
 
     Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Eigen::Vector3f (0,0,1), nullptr, root, 0.0f);
     snakeNodes.push_back(make_shared<Snake>(head));
@@ -154,6 +188,13 @@ void BasicScene::ResetSnake(){
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
 {
+    /**
+     *   if (node->IsBomb())
+        {
+            programCopy.SetUniform4f("color", 0.8f, 0.3f, 0.0f, 0.5f);
+        }
+     */
+
     mtx.lock();
     Scene::Update(program, proj, view, model);
     program.SetUniform4f("lightColor", 0.8f, 0.3f, 0.0f, 0.5f);
@@ -161,6 +202,10 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
+
+    // if its a MovingObject, find its moving object
+
+
     mtx.unlock();
 //    cyl->Rotate(0.001f, Axis::Y);
 //    snakeNodes[0]->Translate(0.01f, Axis::Y);
@@ -259,13 +304,44 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
         // key checks even in paused game
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
+            // swtich cam with TAB anywhere in the game
             case GLFW_KEY_TAB:
                 SwitchCamera();
                 break;
+            // exit the game with ESCAPE
             case GLFW_KEY_ESCAPE:
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
+                switch(menuType){
+                    case GAME:
+                        menuType = PAUSE;
+                        break;
+                    case PAUSE:
+                        menuType = GAME;
+                        break;
+                    case MAIN:
+                        glfwSetWindowShouldClose(window, GLFW_TRUE);
+                        break;
+                    default:
+                        menuType = MAIN;
+                }
                 break;
-
+            // click Play on Main Menu, click Resume on Pause Menu, click Restart on Lose Menu, click Next on Win Menu.
+            case GLFW_KEY_SPACE: case GLFW_KEY_ENTER:
+                switch(menuType){
+                    case GAME:
+                        break;
+                    default:
+                        menuType = GAME;
+                        break;
+                }
+                break;
+            case GLFW_KEY_M:
+                switch(menuType){
+                    case GAME: case PAUSE:
+                        Mute();
+                        break;
+                    default:
+                        break;
+                }
         }
         // checks if and only if game isnt paused
         if (menuType != GAME)
@@ -273,27 +349,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
-            case GLFW_KEY_1:
-                EatPrize();
-                break;
-            case GLFW_KEY_2:
-                Hit();
-                break;
-            case GLFW_KEY_3:
-                Win();
-                break;
-            case GLFW_KEY_4:
-                Die();
-                break;
-            case GLFW_KEY_5:
-                ButtonPress();
-                break;
-            case GLFW_KEY_TAB:
-                SwitchCamera();
-                break;
-            case GLFW_KEY_ESCAPE:
-                glfwSetWindowShouldClose(window, GLFW_TRUE);
-                break;
             case GLFW_KEY_UP: case GLFW_KEY_W:
                 Turn(UP);
                 break;
@@ -306,10 +361,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
             case GLFW_KEY_RIGHT: case GLFW_KEY_D:
                 Turn(RIGHT);
                 break;
-            case GLFW_KEY_SPACE:
-                AddToTail(snakeNodes.back());
-                break;
-
 
             case GLFW_KEY_Z:
                 AddPrize();
@@ -323,9 +374,15 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
 
 void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
-    std::erase_if(movingObjects,
-                  [moving](std::shared_ptr<MovingObject> movingObj) {return movingObj == moving;});
-    root->RemoveChild(moving->GetModel());
+    std::vector<std::shared_ptr<MovingObject>> newMovings;
+    std::copy_if(movingObjects.begin(), movingObjects.end(), std::back_inserter(newMovings),
+                 [moving](std::shared_ptr<MovingObject> other) {return moving != other;});
+
+    movingObjects = newMovings;
+    moving->GetModel()->Translate({100, 100, 100});
+    moving->velocity = 0;
+//    root->RemoveChild(moving->GetModel());
+
 }
 
 
@@ -338,11 +395,13 @@ void BasicScene::DetectCollisions() {
         }
     }
 
-    for(const auto &prize : functionals::filter<MovingPtr>(movingObjects,
+    for(const auto &object : functionals::filter<MovingPtr>(movingObjects,
                                                     [](const MovingPtr &obj){return obj->IsPrize();})) {
-        if(ModelsCollide(head, prize->GetModel())) {
-            RemoveMoving(prize);
-            ShortenSnake();
+        if(ModelsCollide(head, object->GetModel())) {
+            if (object->IsPrize())
+                EatPrize(object);
+            else if (object->IsBomb())
+                Hit(object);
         }
     }
 }
@@ -374,6 +433,7 @@ void BasicScene::PeriodicFunction() {
 
 
     for (auto &node : movingObjects){
+        if (node == nullptr) continue;
         node->MoveForward();
     }
     DetectCollisions();
@@ -527,7 +587,15 @@ Eigen::Vector3f  BasicScene::RandomSpawnPoint(){
 void BasicScene::AddPrize(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+
+    auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
+
+    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Eigen::Vector3f (0,0,1), velocity, root);
+
     root->AddChild(newModel);
+
+    movingObjects.push_back(make_shared<MovingObject>(n));
+
 //    newModel->Translate(RandomSpawnPoint());
     newModel->Translate(Vec3(0,0,-10));
     newModel->Scale(0.02f, Axis::XYZ);
@@ -538,11 +606,7 @@ void BasicScene::AddPrize(){
     newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::Y);
     newModel->Rotate(RollRandomAB(0, (float)(2 * numbers::pi)), Axis::Z);
 
-    auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
 
-    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Eigen::Vector3f (0,0,1), velocity, root);
-
-    movingObjects.push_back(make_shared<MovingObject>(n));
 
 //    Node appleNode()
 }
@@ -590,9 +654,11 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
 void BasicScene::BuildImGui()
 {
+    bool drawPlayerStats = true;
     switch (menuType) {
         case MAIN:
             menuType = DrawMainMenu();
+            drawPlayerStats = false;
             break;
         case GAME:
             menuType = DrawGameMenu();
@@ -609,8 +675,13 @@ void BasicScene::BuildImGui()
         default:
             menuType = DrawMainMenu();
             break;
+
     };
-    // CHANGE
+    if (drawPlayerStats)
+        DrawPlayerStats();
+
+
+    //          SIDE DEBUG MENU FOR MENUS
     ImGui::Begin("Debug Menus", nullptr, ImGuiWindowFlags_None );
     ImGui::SetWindowPos(ImVec2(0,0), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(0,0), ImGuiCond_Always);
@@ -650,7 +721,7 @@ MenuType BasicScene::DrawMainMenu() {
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t\t  Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){exit(0); soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
     ImGui::End();
     return ans;
 }
@@ -768,6 +839,45 @@ MenuType BasicScene::DrawWinMenu() {
     return ans;
 }
 
+void BasicScene::DrawPlayerStats() {
+    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    ImGui::Begin("Player Stats", pOpen, flags);
+    ImGui::SetWindowPos(ImVec2(721, 68), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(474, 50), ImGuiCond_Always);
+
+//    shared_ptr<MenuCords> cords = GetCords();
+//    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+//    bool* pOpen = nullptr;
+//
+//    // CHANGE
+//    ImGui::Begin("Player Stats", pOpen, flags);
+//    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+//    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+
+    ImGui::SetWindowFontScale(LABEL_SIZE);
+    string healthText = "Health : " + std::to_string(snakeNodes.size() - 1);
+    string scoreText = "Score : " + std::to_string(score);
+    string text = healthText + "\t|\t" + scoreText;
+    ImGui::Text(text.c_str());
+
+//    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
+//    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
+//    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
+//    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
+//    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
+//    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
+//    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
+//    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
+//    // CHANGE
+//    if (ImGui::Button ("Print Cords.")) {
+//        cout << "deathCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
+//    }
+
+    ImGui::End();
+}
 
 /**
 *

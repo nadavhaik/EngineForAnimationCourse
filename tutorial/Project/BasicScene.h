@@ -83,13 +83,17 @@ public:
 
 private:
 
-    void Hit(){
+    void Hit(std::shared_ptr<MovingObject> object){
+        RemoveMoving(object);
         soundManager.PlayHitSoundEffect();
+        ShortenSnake();
         // TODO
         //        ShortenSnake();
     }
-    void EatPrize(){
+    void EatPrize(std::shared_ptr<MovingObject> object){
+        RemoveMoving(object);
         soundManager.PlayPrizeSoundEffect();
+        score++;
         // TODO
     }
     void Win(){
@@ -102,14 +106,13 @@ private:
     }
     void ButtonPress(){
         soundManager.PlayButtonSoundEffect();
-        // TODO
     }
     void Mute(){soundManager.Mute();};
 
     void Turn(MovementDirection type);
 
     std::vector<shared_ptr<Snake>> snakeNodes;
-    vector<shared_ptr<MovingObject>> movingObjects;
+    std::vector<std::shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
 
     std::shared_ptr<Camera> topViewCam;
@@ -129,8 +132,12 @@ private:
 
     std::shared_ptr<cg3d::Mesh> prizeMesh;
     std::shared_ptr<cg3d::Material> prizeMaterial;
+    std::shared_ptr<cg3d::Mesh> bombMesh;
+    std::shared_ptr<cg3d::Material> bombMaterial;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
+    std::shared_ptr<cg3d::Mesh> spawnerMesh;
+    std::shared_ptr<cg3d::Material> spawnerMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
     std::mutex mtx;
     cg3d::Viewport* viewport = nullptr;
@@ -143,6 +150,7 @@ private:
     MenuType DrawDeathMenu();
     MenuType DrawWinMenu();
 
+    void DrawPlayerStats();
 
     MenuType menuType = MAIN;
 
@@ -166,10 +174,30 @@ private:
 
     void Reset(){
         ResetSnake();
-        // delete the models
-        for (int i = 0; i < movingObjects.size(); i++)
-            root->RemoveChild(movingObjects[i]->GetModel());
-        movingObjects.clear();
+
+        ClearMovingObjectList();
+
+        score = 0;
     };
 
+    int score = 0;
+
+    Vec3 snakeStartPo = {-20, 0, -10};
+
+    void ClearMovingObjectList(){
+        for (auto &object: movingObjects){
+            RemoveMoving(object);
+        }
+
+//        while (movingObjects.back()->GetModel()->GetTranslation().z() <= 999)
+//            movingObjects.pop_back();
+//        for (int i = 0; i < movingObjects.size(); i++){
+//            auto object = movingObjects.at(i)->GetModel();
+//            if (object->GetTranslation().z() <= 999)
+//            {
+//                std::remove(movingObjects.begin(), movingObjects.end(), object);
+//                root->RemoveChild(object);
+//            }
+//        }
+    }
 };
