@@ -14,8 +14,8 @@
 #include "imgui.h"
 #include "SkinnedSnakeModel.h"
 
-#define PrizeMaxVelocity 0.8f
-#define PrizeMinVelocity 0.2f
+#define PrizeMaxVelocity 8.0f
+#define PrizeMinVelocity 2.0f
 
 
 #define UPDATE_INTERVAL_MILLIS 20

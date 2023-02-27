@@ -18,6 +18,7 @@ int main()
     const float NEAR = 0.1f;
     const float FAR = 200.0f;
 
+
     Renderer renderer;
     Display display("Example1", DISPLAY_WIDTH, DISPLAY_HEIGHT, &renderer);
     std::cout.setstate(std::ios_base::failbit); // suppress junk output to console from igl::opengl::glfw::Viewer

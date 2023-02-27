@@ -35,10 +35,13 @@
 
 using namespace cg3d;
 
+#define FOG_ENABLED 1
 
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
+
+
     // init gui
     gameCords = make_shared<MenuCords>(1671,68 ,120 ,124);
     menuCords = make_shared<MenuCords>(650,200 ,500 ,550);
@@ -220,6 +223,9 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);
+    Vec3 cameraPos = camera->GetTranslation();
+    program.SetUniform3f("cameraPos", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    program.SetUniform1i("fog_enabled", FOG_ENABLED);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 
     // if its a MovingObject, find its moving object

@@ -12,3 +12,4 @@
 3. Full sound manager - music, sound effect, an option to mute, etc.
 4. Interactive, fun GUI! A LOT of menus
 5. Player loses points when the snake self-collides
+6. Box is foggy
