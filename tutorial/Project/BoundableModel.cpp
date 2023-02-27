@@ -124,3 +124,32 @@ float BallModel::GetScaledRadius() {
 }
 
 
+ConstantBoundable::ConstantBoundable(std::string name, std::shared_ptr<cg3d::Mesh> mesh,
+                                     std::shared_ptr<cg3d::Material> material)  : cg3d::Movable(name),
+                                     BoundableModel{name, std::move(mesh), std::move(material)}
+                                     {}
+
+Box ConstantBoundable::GetBoundingBox() {
+    return boundingBox;
+}
+
+void ConstantBoundable::CalculateBB() {
+
+    std::vector<Eigen::Vector3f> fixedVertices = GetFixedVertices();
+
+    Eigen::Vector3f minCorner(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+    Eigen::Vector3f maxCorner(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity());
+
+    for(Eigen::Vector3f vertex : fixedVertices) {
+        minCorner.x() = std::min(minCorner.x(), vertex.x());
+        minCorner.y() = std::min(minCorner.y(), vertex.y());
+        minCorner.z() = std::min(minCorner.z(), vertex.z());
+
+        maxCorner.x() = std::max(maxCorner.x(), vertex.x());
+        maxCorner.y() = std::max(maxCorner.y(), vertex.y());
+        maxCorner.z() = std::max(maxCorner.z(), vertex.z());
+    }
+
+
+    boundingBox = {minCorner, maxCorner};
+}

@@ -73,7 +73,7 @@ bool SamePos(Vec3 a, Vec3 b){
 }
 
 void Snake::MoveForward() {
-    if (rotationQueue.size() > MAX_QUEUE_SIZE)
+    if (rotationsQueue.size() > MAX_QUEUE_SIZE)
             return;
     auto rot = GetNodeModel()->GetRotation();
 
@@ -111,52 +111,83 @@ void Snake::MoveForward() {
 
     // Translate to p2
     snakeModel->Translate((velocity / epsilon) * p2);
+    invisibleBrother->Translate((velocity / 30.0f) * p2);
     // or
     // Do bezier
 }
 
-void Snake::AddRotation(shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> newPair) {
-    if (rotationQueue.size() < MAX_QUEUE_SIZE)
-        rotationQueue.push(newPair);
+void Snake::AddRotation(shared_ptr<RotationCommand> command) {
+    if (rotationsQueue.size() > MAX_QUEUE_SIZE) return;
+    rotationsQueue.push(std::make_shared<FutureRotation>(snakeModel->GetTranslation(), *command));
 }
 
 /**
  *
  * @return the angle and axis of the rotation if a rotation should happen, pair {0, -1} otherwise.
  */
-shared_ptr<pair<double, int>> Snake::Rotate() {
+
+
+shared_ptr<RotationCommand> Snake::Rotate() {
 
     // make sure rotation queue isnt empty
-    if (rotationQueue.empty())
+    if (rotationsQueue.empty())
         return nullptr;
-//    // make sure rotation queue isnt filled
-//    if (rotationQueue.size() > 100)
-//        return didNotRotate;
-    // check that the needed position to rotate is here
-    shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>> poppedPair = rotationQueue.front();
 
-    auto sss = snakeModel->GetTranslation();
-    auto hhh = poppedPair->first;
-    if (!SamePos(snakeModel->GetTranslation(), poppedPair->first))
-        return nullptr;
+   auto nextCommand = rotationsQueue.front();
+   if(IsTail() && (nextCommand->rotationCommand.destination.isApprox(snakeModel->GetTranslation()) || algebra::distance(nextCommand->recievedAt, snakeModel->GetTranslation()) < DISTANCE_FOR_MIMICING_ROTATIONS)) {
+       return nullptr;
+   }
+
 
     // pop from the queue
-    rotationQueue.pop();
+    rotationsQueue.pop();
+    auto commandPtr = std::make_shared<RotationCommand>(nextCommand->rotationCommand);
 
     // check for child snake
     if (child != nullptr){
 //        cout << "the needed position to rotate: " << poppedPair.first << "\n" << endl;
 //        cout << "my position: " << snakeModel->GetTranslation() << "\n" << endl;
-        child->AddRotation(poppedPair);
+        child->AddRotation(std::make_shared<RotationCommand>(commandPtr->axis, commandPtr->angle, snakeModel->GetTranslation()));
     }
 
-    return poppedPair->second;
+    return commandPtr;
 }
 
 void Snake::ClearQueue() {
-    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> empty;
-    swap(rotationQueue, empty);
+//    rotationsQueue.c
+//    queue<shared_ptr<pair<Vector3f, shared_ptr<pair<double, int>>>>> empty;
+//    swap(rotationQueue, empty);
+//
+//    if (child != nullptr)
+//        child->ClearQueue();
+}
 
-    if (child != nullptr)
-        child->ClearQueue();
+bool Snake::InRotation() {
+    return !rotationsQueue.empty();
+}
+
+Snake::Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent,
+             shared_ptr<Movable> root, float _h):
+        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){
+  invisibleBrother = NodeModel::Create("invisible model", _model->GetMesh(0), _model->material);
+  invisibleBrother->SetTransform(_model->GetTransform());
+
+}
+
+
+#define MAX_T 1000.0f
+#define MOVEMENT_TIME_INTERVAL 10.0f
+void BezierMoving::MoveForward() {
+    bezInfo->t += MOVEMENT_TIME_INTERVAL / MAX_T;
+    if(bezInfo->t > 1) {
+        if(!removed) {
+            root->RemoveChild(model);
+            removed = true;
+        }
+        return;
+    }
+
+    Vec3 newCenter = bezInfo->curve(bezInfo->t);
+
+    model->Translate(newCenter - model->GetTranslation());
 }

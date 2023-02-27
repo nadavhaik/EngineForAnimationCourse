@@ -28,6 +28,8 @@
 #include "igl/write_triangle_mesh.h"
 #include "types_macros.h"
 #include "BoundableModel.h"
+#include "SkinnedSnakeModel.h"
+
 
 // #include "AutoMorphingModel.h"
 
@@ -47,7 +49,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
     povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
     tpsCam = Camera::Create( "tps", 90.0f, float(width) / height, near, far);
-    topViewCam = Camera::Create( "camera", fov, float(width) / height, near, far);
+    topViewCam = Camera::Create( "camera", 80.0f, float(width) / height, near, far);
 
     topViewCam->Translate(35, Axis::Z);
 
@@ -63,11 +65,25 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     background->SetPickable(false);
     background->SetStatic();
 
+    topViewCam->Translate(-20, Axis::Z);
+    camera = topViewCam;
 
     auto snakeShader = std::make_shared<Program>("shaders/phongShader");
     auto prizeShader = std::make_shared<Program>("shaders/PrizeShader");
     auto bombShader = std::make_shared<Program>("shaders/BombShader");
     auto spawnerShader = std::make_shared<Program>("shaders/SpawnerShader");
+    AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
+    auto boxMat{std::make_shared<Material>("boxMat", "shaders/cubemapShader")};
+    boxMat->AddTexture(0, "textures/cubemaps/box0_", 3);
+    backgroundBox = ConstantBoundable::Create("backgroundBox", Mesh::Cube(), boxMat);
+    AddChild(backgroundBox);
+    backgroundBox->Scale(40, Axis::XYZ);
+    backgroundBox->SetPickable(false);
+    backgroundBox->SetStatic();
+    backgroundBox->CalculateBB();
+ 
+    auto program = std::make_shared<Program>("shaders/phongShader");
+    auto program1 = std::make_shared<Program>("shaders/pickingShader");
 
     snakeMaterial = {std::make_shared<Material>("snakeMaterial", snakeShader)}; // empty snakeMaterial
     prizeMaterial = {std::make_shared<Material>("prizeMaterial", prizeShader)}; // empty apple material
@@ -91,8 +107,9 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     root->AddChild(spawnerRoot);
     spawnerRoot->Translate({0, 0, -10});
 
+ 
 
-    auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
+    auto snakeRoot = NodeModel::Create("snake", nodeMesh, snakeMaterial);
     root->AddChild(snakeRoot);
     snakeRoot->AddChild(povCam);
     snakeRoot->AddChild(tpsCam);
@@ -126,6 +143,23 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     for(int i=0; i<numOfStartChildren; i++) {
         AddToTail(snakeNodes.back());
     }
+
+//    (std::string name, std::shared_ptr<cg3d::Mesh> mesh,
+//            std::shared_ptr<cg3d::Material> material, std::vector<std::shared_ptr<Model>> joints);
+    auto allNodes = functionals::map<shared_ptr<Snake>, ModelPtr>(snakeNodes, [](shared_ptr<Snake> node) {return node->GetNodeModel();});
+
+    snakeSkin = SkinnedSnakeModel::Create("Snake skin", snakeMesh, snakeMaterial, allNodes);
+
+    snakeSkin->Skin();
+    snakeSkin->Scale(3.5, Axis::Z);
+    snakeSkin->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+    snakeSkin->Translate(-10, Axis::Z);
+    snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
+//    snakeRoot->AddChild(snakeSkin);
+//    root->AddChild(snakeSkin);
+
+
+
 
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
 }
@@ -344,15 +378,38 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 Turn(RIGHT);
                 break;
 
+            case GLFW_KEY_1:
+//                if( pickedIndex > 0)
+//                  pickedIndex--;
+                break;
+            case GLFW_KEY_2:
+
+                break;
+            case GLFW_KEY_3:
+                if( tipIndex >= 0)
+                {
+
+                  tipIndex--;
+                }
+                break;
+            case GLFW_KEY_4:
+
+                break;
+            case GLFW_KEY_SPACE:
+                AddToTail(snakeNodes.back());
+                break;
+
+            case GLFW_KEY_B:
+                AddPrizeBezier();
+                break;
             case GLFW_KEY_Z:
-                AddPrize();
+                AddPrizeLinear();
                 break;
 
         }
     }
 }
 
-#define MOVEMENT_DISTANCE 0.05f
 
 
 void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
@@ -373,7 +430,8 @@ void BasicScene::DetectCollisions() {
     for(int i=2; i<snakeNodes.size(); i++) {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
-            std::cout << "Collusion With Tail!!!" << std::endl;
+            std::cerr << "Collusion With Tail!!!" << std::endl;
+//            exit(-1);
         }
     }
 
@@ -386,6 +444,11 @@ void BasicScene::DetectCollisions() {
                 Hit(object);
         }
     }
+
+    if(!InBox(head)) {
+        std::cerr << "Head is not in box!" << std::endl;
+        exit(-1);
+    }
 }
 
 void BasicScene::PeriodicFunction() {
@@ -394,7 +457,7 @@ void BasicScene::PeriodicFunction() {
 
     mtx.lock();
 
-    int size = snakeNodes[0]->rotationQueue.size();
+    int size = snakeNodes[0]->rotationsQueue.size();
 //    if (size  == MAX_QUEUE_SIZE - 1)
 //        snakeNodes[0]->ClearQueue();
 //    cout<<size<<"\n"<<endl;
@@ -419,6 +482,7 @@ void BasicScene::PeriodicFunction() {
         node->MoveForward();
     }
     DetectCollisions();
+    snakeSkin->Skin();
 
     mtx.unlock();
 
@@ -432,44 +496,51 @@ BasicScene::~BasicScene() {
 }
 
 void BasicScene::Turn(MovementDirection type){
-    int axis;
+    Axis axis;
     float angle = SNAKE_TURN_ANGLE_RADIANS;
     switch (type){
         case RIGHT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= -1; // change angle
             snakeNodes[0]->heading += SNAKE_TURN_ANGLE_RADIANS;
             break;
         case LEFT:
-            axis = 1; // Y axis
+            axis = Axis::Y; // Y axis
             angle *= 1; // dont change angle
             snakeNodes[0]->heading -= SNAKE_TURN_ANGLE_RADIANS;
             break;
         case UP:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= -1; // change angle
             break;
         case DOWN:
-            axis = 0; // X axis
+            axis = Axis::X; // X axis
             angle *= 1; // dont change angle
             break;
     }
 
     auto posToRot = snakeNodes[0]->GetNodeModel()->GetTranslation();
-    auto rotation = make_shared<pair<double, int>>(make_pair(angle, axis));
+    auto rotation = std::make_shared<RotationCommand>(axis, angle, Vec3::Zero());
+    snakeNodes[0]->AddRotation(rotation);
 
-    auto newTurn = make_shared<pair<Eigen::Vector3f  , shared_ptr<pair<double, int>>>>
-            (make_pair( snakeNodes[0]->GetNodeModel()->GetTranslation(), make_shared<pair<double, int>>(make_pair(angle, axis))));
+}
 
-    snakeNodes[0]->AddRotation(newTurn);
-
+bool AlmostEqual(Mat3x3 m1, Mat3x3 m2) {
+    float maxDelta = 100 * std::numeric_limits<float>::min();
+    for(int i=0; i<3; i++) {
+        for(int j=0; j<3; j++) {
+            if(std::abs(m1(i, j) - m2(i, j)) > maxDelta) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
-    // fix snake rotation queue
 
-    shared_ptr<pair<double, int>> rotation = snake->Rotate();
+    auto rotation = snake->Rotate();
 
 //    // if shouldnt rotate, safe return
 //    if (rotation.second == -1)
@@ -477,21 +548,52 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 //
     while(rotation != nullptr)
     {
-        float angle = rotation->first;
-        Axis turnAxis;
-        switch (rotation->second){
-            case 0: // if up or down
-                turnAxis = Axis::X;
-                break;
-            case 1: // if right or left
-                turnAxis = Axis::Y;
-                break;
-        }
+        float angle = rotation->angle;
+        Axis turnAxis = rotation->axis;
 
         // else rotate by angle and turnAxis as in the needed turn
         snake->GetNodeModel()->Rotate(angle, turnAxis);
+        snake->invisibleBrother->Rotate(angle, turnAxis);
+
+        float distance = algebra::distance(snake->GetNodeModel()->GetTranslation(), snake->invisibleBrother->GetTranslation());
+
+
         auto x = "";
+        auto prevRot = rotation;
         rotation = snake->Rotate();
+
+//         fine tuning for tails:
+        if(rotation == nullptr && snake->IsTail() && !snake->parent->InRotation() &&
+                AlmostEqual(snake->GetNodeModel()->GetRotation(), snake->parent->GetNodeModel()->GetRotation())) {
+//            continue;
+//                snake->GetNodeModel()->GetRotation().isApprox(snake->parent->GetNodeModel()->GetRotation())) {
+
+            Vec3 delta = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
+            Vec3 deltaInSystem = snake->parent->GetNodeModel()->GetRotation().inverse() * delta;
+
+            Vec3 fixedDelta = snake->parent->GetNodeModel()->GetRotation() * Vec3(deltaInSystem.x(), deltaInSystem.y(), 0);
+
+            std::cout << "delta: (" << delta.x() << "," << delta.y() << ","
+                      << delta.z() << ")" << std::endl;
+            std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
+                << deltaInSystem.z() << ")" << std::endl;
+
+            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
+            if(deviation > 0.01) return;
+
+            snake->GetNodeModel()->Translate(fixedDelta);
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
+//            snake->GetNodeModel()->Translate({delta.x(), delta.y(), delta.z()});
+
+//            Vec3 parentPos = snake->parent->GetNodeModel()->GetTranslation();
+//            Vec3 deltaFromParent = parentPos - snake->GetNodeModel()->GetTranslation();
+
+//            float distanceFromParent = algebra::distance(parentPos, deltaFromParent);
+//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(),
+//                                                     {0, 0, 1.0f - distanceFromParent});
+//            snake->GetNodeModel()->SetCenter(snake->GetNodeModel()->GetRotation() * ((1.0f - distanceFromParent) * deltaFromParent));
+//            snake->GetNodeModel()->Translate({0, 0, 1.0f - distanceFromParent});
+        }
     }
 
 
@@ -505,16 +607,9 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
 
     root->AddChild(newNode);
     newNode->Rotate(_parent->GetRotation());
-    newNode->Translate(_parent->GetTranslation());
-
-
-    float xTrans = cos(heading);
-    float yTrans = sin(heading);
+    newNode->Translate(_parent->GetTranslation() - _parent->GetRotation() * Vec3(0, 0, 1));
 
     Vec3 diag = _parent->GetDiag();
-//    newNode->Translate(NODE_LENGTH * Eigen::Vector3f(-xTrans, yTrans, 0));
-
-    newNode->Translate( Eigen::Vector3f(-xTrans, yTrans, 0));
 
     Snake newSnake(TAIL, newNode, newNode->GetRotation() * Eigen::Vector3f (0,0,1), parent, root, (float)heading);
     // add as child of the previous snack (the back of snake list)
@@ -566,7 +661,7 @@ Eigen::Vector3f  BasicScene::RandomSpawnPoint(){
 }
 
 
-void BasicScene::AddPrize(){
+void BasicScene::AddPrizeLinear(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
 
@@ -592,6 +687,29 @@ void BasicScene::AddPrize(){
 
 //    Node appleNode()
 }
+
+Vec3 BasicScene::RandomPointInBox() {
+    Vec3 min = backgroundBox->GetBoundingBox().min();
+    Vec3 max = backgroundBox->GetBoundingBox().max();
+
+    return {RollRandomAB(min.x(), max.x()),
+            RollRandomAB(min.y(), max.y()),
+            RollRandomAB(min.z(), max.z())};
+}
+
+
+void BasicScene::AddPrizeBezier() {
+    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+    root->AddChild(newModel);
+    newModel->Translate(Vec3(0,0,-10));
+    newModel->Scale(0.02f, Axis::XYZ);
+    Vec3 p0 = newModel->GetTranslation();
+    Vec3 p1 = RandomPointInBox();
+    Vec3 p2 = RandomPointInBox();
+
+    movingObjects.push_back(make_shared<BezierMoving>(newModel, root, CubicBezier(p0, p1, p2)));
+}
+
 
 void BasicScene::SwitchCamera() {
     switch (cameraType) {
@@ -630,6 +748,7 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
     Scene::AddViewportCallback(viewport);
 }
+
 
 
 
@@ -892,3 +1011,9 @@ void BasicScene::DrawPlayerStats() {
     if (ImGui::Button ("Win Menu")){ans = WIN;}
     ImGui::End();
 */
+
+
+bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
+    return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
+}
+

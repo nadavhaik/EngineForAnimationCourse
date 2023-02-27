@@ -12,6 +12,7 @@
 #include "mutex"
 #include "SceneWithImGui.h"
 #include "imgui.h"
+#include "SkinnedSnakeModel.h"
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -23,8 +24,11 @@
 #define NINETY_DEGREES_IN_RADIANS 1.57079633f
 #define SNAKE_TURN_ANGLE_RADIANS 0.1f
 
+#define MOVEMENT_DISTANCE 0.10f
 
-#define MOVEMENT_DISTANCE 0.03f
+
+#include "algebra.h"
+
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
@@ -71,11 +75,16 @@ public:
 
     Eigen::Vector3f RandomSpawnPoint();
     void AddPrize();
+    Vector3f RandomSpawnPoint();
+    Vec3 RandomPointInBox();
+    void AddPrizeLinear();
+    void AddPrizeBezier();
 
     float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
     std::shared_ptr<Movable> root;
     void RemoveMoving(shared_ptr<MovingObject> moving);
     void FollowHeadWithCamera();
+    bool InBox(const BoundablePtr &model);
 
     SoundManager soundManager;
 
@@ -114,10 +123,11 @@ private:
     std::vector<shared_ptr<Snake>> snakeNodes;
     std::vector<std::shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
-
+    std::shared_ptr<SkinnedSnakeModel> snakeSkin;
     std::shared_ptr<Camera> topViewCam;
     std::shared_ptr<Camera> povCam;
     std::shared_ptr<Camera> tpsCam;
+    std::shared_ptr<ConstantBoundable> backgroundBox;
 
     int pickedIndex = 0;
     int tipIndex = 0;
@@ -134,6 +144,7 @@ private:
     std::shared_ptr<cg3d::Material> prizeMaterial;
     std::shared_ptr<cg3d::Mesh> bombMesh;
     std::shared_ptr<cg3d::Material> bombMaterial;
+    std::shared_ptr<cg3d::Mesh> nodeMesh;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
     std::shared_ptr<cg3d::Mesh> spawnerMesh;
