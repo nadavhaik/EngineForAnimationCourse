@@ -41,7 +41,7 @@ struct SnakeNode {
     float heading{};
 };
 
-enum MenuType {MAIN, GAME, PAUSE, DEATH, WIN};
+enum MenuType {MAIN, GAME, PAUSE, DEATH, WIN, BETWEEN};
 struct MenuCords{
     MenuCords(float x, float y, float udb, float sb): x_pos(x), y_pos(y), up_down_bor(udb), side_bor(sb){}
     float x_pos;
@@ -95,22 +95,24 @@ private:
         RemoveMoving(object);
         soundManager.PlayHitSoundEffect();
         ShortenSnake();
-        // TODO
-        //        ShortenSnake();
+
+        if (snakeNodes.size() <= 1) // if only head remaining
+            Die();
     }
     void EatPrize(std::shared_ptr<MovingObject> object){
         RemoveMoving(object);
         soundManager.PlayPrizeSoundEffect();
         score++;
-        // TODO
+        // TODO count score to see when it reaches max
     }
     void Win(){
         soundManager.PlayWinSoundEffect();
-        // TODO
+        menuType = WIN;
+        // TODO level ++
     }
     void Die(){
         soundManager.PlayLoseSoundEffect();
-        // TODO
+        menuType = DEATH;
     }
     void ButtonPress(){
         soundManager.PlayButtonSoundEffect();
@@ -155,6 +157,7 @@ private:
 
 
     MenuType DrawMainMenu();
+    MenuType DrawBetweenMenu();
     MenuType DrawGameMenu();
     MenuType DrawPauseMenu();
     MenuType DrawDeathMenu();

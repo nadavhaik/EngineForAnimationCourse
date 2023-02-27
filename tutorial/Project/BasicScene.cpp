@@ -41,7 +41,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
     // init gui
     gameCords = make_shared<MenuCords>(1671,68 ,120 ,124);
-    menuCords = make_shared<MenuCords>(650,200 ,500 ,550);
+    menuCords = make_shared<MenuCords>(650,200 ,550 ,550);
 
     // init sound
     soundManager.InitManager();
@@ -242,77 +242,15 @@ void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int
             return;
 
         SwitchCamera();
-
-//        PickVisitor visitor;
-//        visitor.Init();
-//        renderer->RenderViewportAtPos(x, y, &visitor); // pick using fixed colors hack
-//        auto modelAndDepth = visitor.PickAtPos(x, renderer->GetWindowHeight() - y);
-//        renderer->RenderViewportAtPos(x, y); // draw again to avoid flickering
-//        pickedModel = modelAndDepth.first ? std::dynamic_pointer_cast<Model>(modelAndDepth.first->shared_from_this()) : nullptr;
-//        pickedModelDepth = modelAndDepth.second;
-//        camera->GetRotation().transpose();
-//        xAtPress = x;
-//        yAtPress = y;
-//
-//        // if (pickedModel)
-//        //     debug("found ", pickedModel->isPickable ? "pickable" : "non-pickable", " model at pos ", x, ", ", y, ": ",
-//        //           pickedModel->name, ", depth: ", pickedModelDepth);
-//        // else
-//        //     debug("found nothing at pos ", x, ", ", y);
-//
-//        if (pickedModel && !pickedModel->isPickable)
-//            pickedModel = nullptr; // for non-pickable models we need only pickedModelDepth for mouse movement calculations later
-//
-//        if (pickedModel)
-//            pickedToutAtPress = pickedModel->GetTout();
-//        else
-//            cameraToutAtPress = camera->GetTout();
     }
 }
 
 void BasicScene::ScrollCallback(Viewport* viewport, int x, int y, int xoffset, int yoffset, bool dragging, int buttonState[])
 {
-    // note: there's a (small) chance the button state here precedes the mouse press/release event
-//    Eigen::Matrix3f system = camera->GetRotation().transpose();
-//    if (pickedModel) {
-//        pickedModel->TranslateInSystem(system, {0, 0, -float(yoffset)});
-//        pickedToutAtPress = pickedModel->GetTout();
-//    } else {
-//        camera->TranslateInSystem(system, {0, 0, -float(yoffset)});
-//        cameraToutAtPress = camera->GetTout();
-//    }
 }
 
 void BasicScene::CursorPosCallback(Viewport* viewport, int x, int y, bool dragging, int* buttonState)
 {
-//    if (dragging) {
-//        Eigen::Matrix3f system = camera->GetRotation().transpose() * GetRotation();
-//        auto moveCoeff = camera->CalcMoveCoeff(pickedModelDepth, viewport->width);
-//        auto angleCoeff = camera->CalcAngleCoeff(viewport->width);
-//        if (pickedModel) {
-//            //pickedModel->SetTout(pickedToutAtPress);
-//            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE)
-//                pickedModel->TranslateInSystem(system, {-float(xAtPress - x) / moveCoeff, float(yAtPress - y) / moveCoeff, 0});
-//            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
-//                pickedModel->RotateInSystem(system, float(xAtPress - x) / angleCoeff, Axis::Z);
-//            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE) {
-//                pickedModel->RotateInSystem(system, float(xAtPress - x) / angleCoeff, Axis::Y);
-//                pickedModel->RotateInSystem(system, float(yAtPress - y) / angleCoeff, Axis::X);
-//            }
-//        } else {
-//           // camera->SetTout(cameraToutAtPress);
-//            if (buttonState[GLFW_MOUSE_BUTTON_RIGHT] != GLFW_RELEASE)
-//                root->TranslateInSystem(system, {-float(xAtPress - x) / moveCoeff/10.0f, float( yAtPress - y) / moveCoeff/10.0f, 0});
-//            if (buttonState[GLFW_MOUSE_BUTTON_MIDDLE] != GLFW_RELEASE)
-//                root->RotateInSystem(system, float(x - xAtPress) / 180.0f, Axis::Z);
-//            if (buttonState[GLFW_MOUSE_BUTTON_LEFT] != GLFW_RELEASE) {
-//                root->RotateInSystem(system, float(x - xAtPress) / angleCoeff, Axis::Y);
-//                root->RotateInSystem(system, float(y - yAtPress) / angleCoeff, Axis::X);
-//            }
-//        }
-//        xAtPress =  x;
-//        yAtPress =  y;
-//    }
 }
 
 void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scancode, int action, int mods)
@@ -320,6 +258,16 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     Eigen::Matrix3f system = camera->GetRotation().transpose();
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+        if (key == GLFW_KEY_K)
+        {
+            Die();
+            return;
+        }
+        if (key == GLFW_KEY_L)
+        {
+            Win();
+            return;
+        }
         // key checks even in paused game
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
@@ -631,6 +579,7 @@ void BasicScene::ShortenSnake() {
     snakeNodes.back()->RemoveChild();
     snakeNodes.pop_back();
     root->RemoveChild(lastNode);
+
 }
 
 
@@ -767,6 +716,10 @@ void BasicScene::BuildImGui()
             menuType = DrawMainMenu();
             drawPlayerStats = false;
             break;
+        case BETWEEN:
+            menuType = DrawBetweenMenu();
+            drawPlayerStats = false;
+            break;
         case GAME:
             menuType = DrawGameMenu();
             break;
@@ -815,7 +768,7 @@ MenuType BasicScene::DrawMainMenu() {
     bool* pOpen = nullptr;
 
     // CHANGE
-    ImGui::Begin("Main Menu", pOpen, flags);
+    ImGui::Begin("Welcome! First time here?", pOpen, flags);
     ImGui::SetWindowFontScale(LABEL_SIZE);
     ImGui::Text("\n\n\t\t\t\tSnake 3D\n\t\tMade by Mattan and Nadav");
     ImGui::Text("\n\n\n\n\n\n");
@@ -824,11 +777,37 @@ MenuType BasicScene::DrawMainMenu() {
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
 
-    if (ImGui::Button ("\t\t\t\t\tPlay the Game\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t\tPlay the Game\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t\t  Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+    ImGui::End();
+    return ans;
+}
+
+/**
+ *
+ * @return the next game mode
+ */
+MenuType BasicScene::DrawBetweenMenu() {
+    MenuType ans =  BETWEEN;
+    shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    ImGui::Begin(/* TODO : if level is bigger than some big num like 10 write holy shit or smth*/"Level $ Menu", pOpen, flags);
+    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::Text("\n\n\n  \t\tLevel X Menu"); // TODO
+    ImGui::Text("\t You need to get X prizes"); // TODO
+    ImGui::Text("\n\n\n");
+    ImGui::SetWindowFontScale(BUTTON_SIZE);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+    if (ImGui::Button ("\t\t\t\t\t   Start\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect();}
     ImGui::End();
     return ans;
 }
@@ -867,7 +846,9 @@ MenuType BasicScene::DrawPauseMenu() {
 
     ImGui::Begin("Pause Menu", pOpen, flags);
     ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
-    ImGui::Text("\n\n\n  \t\tPause Menu");
+    ImGui::Text("\n\n\n  \t\tPee Break Menu");
+    ImGui::Text("  \t\tX / Y killed so far"); // TODO
+    ImGui::Text("  \t\tIn level Z"); // TODO
     ImGui::Text("\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
@@ -889,27 +870,23 @@ MenuType BasicScene::DrawDeathMenu() {
     bool* pOpen = nullptr;
 
     // CHANGE
-    ImGui::Begin("Death Menu", pOpen, flags);
+    ImGui::Begin(/* TODO : if score needed to pass is 1/5 out of needed show so close, else show you were trying*/"Oh no! You were so close!", pOpen, flags);
+
+    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::Text("\n\n\n  \t\tYou Died!");
+    ImGui::Text("  \tYou Killed X / Y"); // TODO
+    ImGui::Text("  \t\tIn level Z"); // TODO
+    ImGui::Text("\n\n\n");
+    ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
-    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
-    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
-    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
-    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
-    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
-    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
-    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
-    // CHANGE
-    if (ImGui::Button ("Print Cords.")) {
-        cout << "deathCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
-    }
-    if (ImGui::Button ("Main Menu")){ans = MAIN;}
-    if (ImGui::Button ("Game Menu")){ans = GAME;}
-    if (ImGui::Button ("Pause Menu")){ans = PAUSE;}
-    if (ImGui::Button ("Death Menu")){ans = DEATH;}
-    if (ImGui::Button ("Win Menu")){ans = WIN;}
+    if (ImGui::Button ("\t\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); Reset();} // TODO : CHANGE TO RESET LEVEL
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+
     ImGui::End();
     return ans;
 }
@@ -921,27 +898,23 @@ MenuType BasicScene::DrawWinMenu() {
     bool* pOpen = nullptr;
 
     // CHANGE
-    ImGui::Begin("Win Menu", pOpen, flags);
+    ImGui::Begin("Congrats! You Won!", pOpen, flags);
+
+    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::Text("\n\n\n  \tYou did amazing!");
+    ImGui::Text("  \tYou beat level Z"); // TODO
+    ImGui::Text("  \tBu eating X prizes!"); // TODO
+    ImGui::Text("\n\n\n");
+    ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
-    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
-    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
-    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
-    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
-    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
-    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
-    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
-    // CHANGE
-    if (ImGui::Button ("Print Cords.")) {
-        cout << "winCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
-    }
-    if (ImGui::Button ("Main Menu")){ans = MAIN;}
-    if (ImGui::Button ("Game Menu")){ans = GAME;}
-    if (ImGui::Button ("Pause Menu")){ans = PAUSE;}
-    if (ImGui::Button ("Death Menu")){ans = DEATH;}
-    if (ImGui::Button ("Win Menu")){ans = WIN;}
+    if (ImGui::Button ("\t\t\t\t\t  Next Level\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); Reset();} // TODO : CHANGE TO append LEVEL
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+
     ImGui::End();
     return ans;
 }
