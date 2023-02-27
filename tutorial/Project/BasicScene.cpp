@@ -216,7 +216,7 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 
     mtx.lock();
     Scene::Update(program, proj, view, model);
-//    program.SetUniform4f("lightColor", 0.8f, 0.3f, 0.0f, 0.5f);
+    program.SetUniform4f("lightColor", 0.80078125f, 0.51953125f, 0.24609375f, 1.0f);
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);
