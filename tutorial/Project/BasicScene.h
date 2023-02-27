@@ -196,8 +196,10 @@ private:
 
     void ClearMovingObjectList(){
         for (auto &object: movingObjects){
-            RemoveMoving(object);
+            root->RemoveChild(object->GetModel());
         }
+
+        movingObjects.clear();
 
 //        while (movingObjects.back()->GetModel()->GetTranslation().z() <= 999)
 //            movingObjects.pop_back();

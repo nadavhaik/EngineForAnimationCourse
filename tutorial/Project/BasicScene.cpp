@@ -46,33 +46,30 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     // init sound
     soundManager.InitManager();
 
-
+    // cameras
     povCam = Camera::Create( "pov", 90.0f, float(width) / height, near, far);
     tpsCam = Camera::Create( "tps", 90.0f, float(width) / height, near, far);
     topViewCam = Camera::Create( "camera", 80.0f, float(width) / height, near, far);
+    topViewCam->Translate(15, Axis::Z);
 
-    topViewCam->Translate(35, Axis::Z);
-
+    // first camera
     cameraType = CameraType::TPS;
     camera = tpsCam;
 
+    // create root
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
+
+    // create daylight material
     auto daylight{std::make_shared<Material>("daylight", "shaders/cubemapShader")};
     daylight->AddTexture(0, "textures/cubemaps/Daylight Box_", 3);
+    // create background cube for the daylight
     auto background{Model::Create("background", Mesh::Cube(), daylight)};
     AddChild(background);
     background->Scale(120, Axis::XYZ);
     background->SetPickable(false);
     background->SetStatic();
 
-    topViewCam->Translate(-20, Axis::Z);
-//    camera = topViewCam;
-
-    auto snakeShader = std::make_shared<Program>("shaders/phongShader");
-    auto prizeShader = std::make_shared<Program>("shaders/PrizeShader");
-    auto bombShader = std::make_shared<Program>("shaders/BombShader");
-    auto spawnerShader = std::make_shared<Program>("shaders/SpawnerShader");
-    AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
+    // create background
     auto boxMat{std::make_shared<Material>("boxMat", "shaders/cubemapShader")};
     boxMat->AddTexture(0, "textures/cubemaps/box0_", 3);
     backgroundBox = ConstantBoundable::Create("backgroundBox", Mesh::Cube(), boxMat);
@@ -81,6 +78,13 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     backgroundBox->SetPickable(false);
     backgroundBox->SetStatic();
     backgroundBox->CalculateBB();
+
+
+    auto snakeShader = std::make_shared<Program>("shaders/phongShader");
+    auto prizeShader = std::make_shared<Program>("shaders/PrizeShader");
+    auto bombShader = std::make_shared<Program>("shaders/BombShader");
+    auto spawnerShader = std::make_shared<Program>("shaders/SpawnerShader");
+
  
 
     snakeMaterial = {std::make_shared<Material>("snakeMaterial", snakeShader)}; // empty snakeMaterial
@@ -102,6 +106,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
     // create "spawner" at 0,0,0
     auto spawnerRoot = Model::Create("spawner", spawnerMesh, spawnerMaterial);
+    background->Scale(1.5, Axis::XYZ);
     root->AddChild(spawnerRoot);
     spawnerRoot->Translate({0, 0, -10});
 
@@ -411,6 +416,7 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
 
 
 void BasicScene::RemoveMoving(shared_ptr<MovingObject> moving) {
+
     std::vector<std::shared_ptr<MovingObject>> newMovings;
     std::copy_if(movingObjects.begin(), movingObjects.end(), std::back_inserter(newMovings),
                  [moving](std::shared_ptr<MovingObject> other) {return moving != other;});
@@ -434,12 +440,14 @@ void BasicScene::DetectCollisions() {
     }
 
     for(const auto &object : functionals::filter<MovingPtr>(movingObjects,
-                                                    [](const MovingPtr &obj){return obj->IsPrize();})) {
+                                                    [](const MovingPtr &obj){return !obj->IsSnake();})) {
         if(ModelsCollide(head, object->GetModel())) {
-            if (object->IsPrize())
+            if (object->IsPrize()){
                 EatPrize(object);
-            else if (object->IsBomb())
+            }
+            else if (object->IsBomb()){
                 Hit(object);
+            }
         }
     }
 
@@ -697,7 +705,7 @@ Vec3 BasicScene::RandomPointInBox() {
 
 
 void BasicScene::AddPrizeBezier() {
-    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+    auto newModel = BallModel::Create("prize", bombMesh, bombMaterial);
     root->AddChild(newModel);
     newModel->Translate(Vec3(0,0,-10));
     newModel->Scale(0.02f, Axis::XYZ);
@@ -705,7 +713,7 @@ void BasicScene::AddPrizeBezier() {
     Vec3 p1 = RandomPointInBox();
     Vec3 p2 = RandomPointInBox();
 
-    movingObjects.push_back(make_shared<BezierMoving>(newModel, root, CubicBezier(p0, p1, p2)));
+    movingObjects.push_back(make_shared<BezierMoving>(BOMB, newModel, root, CubicBezier(p0, p1, p2)));
 }
 
 

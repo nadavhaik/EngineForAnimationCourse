@@ -107,8 +107,8 @@ private:
 
 class BezierMoving : public MovingObject {
 public:
-    BezierMoving(BoundablePtr model, std::shared_ptr<Movable> root, MovementCurve curve) :
-        MovingObject(PRIZE, model, {0, 0, 0}, 1.5, root),
+    BezierMoving(ObjectType type, BoundablePtr model, std::shared_ptr<Movable> root, MovementCurve curve) :
+        MovingObject(type, model, {0, 0, 0}, 1.5, root),
         bezInfo(std::make_shared<BezierInfo>(curve)), removed(false) {};
     void MoveForward() override;
 private:
