@@ -61,7 +61,9 @@ public:
     void Rotate(shared_ptr<Snake> snake);
 
     Vector3f RandomSpawnPoint();
-    void AddPrize();
+    Vec3 RandomPointInBox();
+    void AddPrizeLinear();
+    void AddPrizeBezier();
 
     float RollRandomAB(float min, float max){return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));}
     std::shared_ptr<Movable> root;
