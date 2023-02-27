@@ -191,19 +191,14 @@ private:
         // regen snake
         RecreateSnake(startingHealth - snakeNodes.size());
         ResetEnv();
-        // TODO make levels - the FIRST LEVEL HERE \/
-
+        currentLevel = 1;
     }
     void RestartLevel(){
         ResetEnv();
-        // TODO reset timer - THE SAME LEVEL HERE \/
-        levelTimer = 1;
     }
     void NextLevel(){
         ResetEnv();
-        // TODO change score needed to pass - THE NEXT LEVEL HERE \/
         currentLevel++;
-        levelTimer = 1;
     }
     void ResetEnv(){
         ResetSnake();
@@ -211,6 +206,8 @@ private:
         ClearMovingObjectList();
 
         score = 0;
+        levelTimer = 1;
+
     };
 
     int score = 0;
