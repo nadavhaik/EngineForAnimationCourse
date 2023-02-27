@@ -74,6 +74,7 @@ public:
     void Rotate(shared_ptr<Snake> snake);
 
     Eigen::Vector3f RandomSpawnPoint();
+    Axis RandomAxis();
     void AddPrize();
     Vec3 RandomPointInBox();
     void AddPrizeLinear();

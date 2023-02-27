@@ -1,11 +1,14 @@
 # Mattan Cohen and Nadav Haik Barouch's Animation course github
 
-## Assignment1
+## PROJECT
 
+1. Move between cameras with TAB
+2. Eat the red prizes and dodge the purple bombs,
+3. An honourable mention for dqs is at 'for_tal'
 
-1. Run and compile the 'Assignment1' folder in tutorial.
-2. Pick the desired model by clicking it
-3. Pressing the SPACE key will collapse 10% of the selected model's faces (if possible).
-4. Pressing the BACKSPACE key will reset the selected object. 
-
-
+# Bonuses
+1. Each node moves forward by default, and follows and mimics it's "parent"'s rotation when reaching the point it was rotated - looks snakey and nodey.
+2. Bombs moves in box via Bezier
+3. Full sound manager - music, sound effect, an option to mute, etc.
+4. Interactive, fun GUI! A LOT of menus
+5. Player loses points when the snake self-collides

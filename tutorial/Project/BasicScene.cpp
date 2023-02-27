@@ -670,6 +670,10 @@ Eigen::Vector3f  BasicScene::RandomSpawnPoint(){
 void BasicScene::AddPrizeLinear(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+    auto axis = RandomAxis();
+    float angle = RollRandomAB(0, 2 * std::numbers::pi);
+
+    newModel->Rotate(angle, axis);
 
     auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
 
@@ -702,7 +706,6 @@ Vec3 BasicScene::RandomPointInBox() {
             RollRandomAB(min.y(), max.y()),
             RollRandomAB(min.z(), max.z())};
 }
-
 
 void BasicScene::AddPrizeBezier() {
     auto newModel = BallModel::Create("prize", bombMesh, bombMaterial);
@@ -1021,5 +1024,16 @@ void BasicScene::DrawPlayerStats() {
 
 bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
     return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
+}
+
+Axis BasicScene::RandomAxis() {
+    float t = RollRandomAB(0, 3);
+    if(0 <= t && t < 1) {
+        return Axis::X;
+    } else if(1 <= t && t < 2) {
+        return Axis::Y;
+    }
+
+    return Axis::Z;
 }
 
