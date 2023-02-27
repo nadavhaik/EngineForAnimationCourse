@@ -1,13 +1,17 @@
 #pragma once
+
 #include "PeriodicExecutor.h"
 #include "types_macros.h"
 #include <memory>
 #include <utility>
 #include "BoundableModel.h"
 #include "MovingObject.h"
+#include "SoundManager.h"
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
+#include "SceneWithImGui.h"
+#include "imgui.h"
 #include "SkinnedSnakeModel.h"
 
 #define PrizeMaxVelocity 0.8f
@@ -28,7 +32,6 @@
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
-
 enum CameraType {POV, TPS, TOP_VIEW};
 
 using namespace Eigen;
@@ -38,10 +41,20 @@ struct SnakeNode {
     float heading{};
 };
 
-class BasicScene : public cg3d::Scene
+enum MenuType {MAIN, GAME, PAUSE, DEATH, WIN};
+struct MenuCords{
+    MenuCords(float x, float y, float udb, float sb): x_pos(x), y_pos(y), up_down_bor(udb), side_bor(sb){}
+    float x_pos;
+    float y_pos;
+    float up_down_bor;
+    float side_bor;
+};
+
+class BasicScene : public cg3d::SceneWithImGui
 {
 public:
-    explicit BasicScene(std::string name, cg3d::Display* display) : Scene(std::move(name), display) {};
+    explicit BasicScene(std::string name, cg3d::Display* display) : SceneWithImGui(std::move(name), display) {};
+    void BuildImGui() override;
     ~BasicScene() override;
     void Init(float fov, int width, int height, float near, float far);
     void Update(const cg3d::Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model) override;
@@ -60,6 +73,8 @@ public:
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     void Rotate(shared_ptr<Snake> snake);
 
+    Eigen::Vector3f RandomSpawnPoint();
+    void AddPrize();
     Vector3f RandomSpawnPoint();
     Vec3 RandomPointInBox();
     void AddPrizeLinear();
@@ -71,11 +86,42 @@ public:
     void FollowHeadWithCamera();
     bool InBox(const BoundablePtr &model);
 
+    SoundManager soundManager;
+
+
+
 private:
+
+    void Hit(std::shared_ptr<MovingObject> object){
+        RemoveMoving(object);
+        soundManager.PlayHitSoundEffect();
+        ShortenSnake();
+        // TODO
+        //        ShortenSnake();
+    }
+    void EatPrize(std::shared_ptr<MovingObject> object){
+        RemoveMoving(object);
+        soundManager.PlayPrizeSoundEffect();
+        score++;
+        // TODO
+    }
+    void Win(){
+        soundManager.PlayWinSoundEffect();
+        // TODO
+    }
+    void Die(){
+        soundManager.PlayLoseSoundEffect();
+        // TODO
+    }
+    void ButtonPress(){
+        soundManager.PlayButtonSoundEffect();
+    }
+    void Mute(){soundManager.Mute();};
+
     void Turn(MovementDirection type);
 
     std::vector<shared_ptr<Snake>> snakeNodes;
-    vector<shared_ptr<MovingObject>> movingObjects;
+    std::vector<std::shared_ptr<MovingObject>> movingObjects;
     CameraType cameraType = TOP_VIEW;
     std::shared_ptr<SkinnedSnakeModel> snakeSkin;
     std::shared_ptr<Camera> topViewCam;
@@ -96,11 +142,73 @@ private:
 
     std::shared_ptr<cg3d::Mesh> prizeMesh;
     std::shared_ptr<cg3d::Material> prizeMaterial;
+    std::shared_ptr<cg3d::Mesh> bombMesh;
+    std::shared_ptr<cg3d::Material> bombMaterial;
     std::shared_ptr<cg3d::Mesh> nodeMesh;
     std::shared_ptr<cg3d::Mesh> snakeMesh;
     std::shared_ptr<cg3d::Material> snakeMaterial;
+    std::shared_ptr<cg3d::Mesh> spawnerMesh;
+    std::shared_ptr<cg3d::Material> spawnerMaterial;
     float headHeading = NINETY_DEGREES_IN_RADIANS;
     std::mutex mtx;
     cg3d::Viewport* viewport = nullptr;
     int lastQueueSize;
+
+
+    MenuType DrawMainMenu();
+    MenuType DrawGameMenu();
+    MenuType DrawPauseMenu();
+    MenuType DrawDeathMenu();
+    MenuType DrawWinMenu();
+
+    void DrawPlayerStats();
+
+    MenuType menuType = MAIN;
+
+    shared_ptr<MenuCords> menuCords;
+    shared_ptr<MenuCords> gameCords;
+
+    shared_ptr<MenuCords> GetCords(){
+        switch (menuType) {
+            case GAME:
+                return gameCords;
+            case MAIN:
+            case PAUSE:
+            case DEATH:
+            case WIN:
+            default:
+                return menuCords;
+        };
+    }
+
+    void ResetSnake();
+
+    void Reset(){
+        ResetSnake();
+
+        ClearMovingObjectList();
+
+        score = 0;
+    };
+
+    int score = 0;
+
+    Vec3 snakeStartPo = {-20, 0, -10};
+
+    void ClearMovingObjectList(){
+        for (auto &object: movingObjects){
+            RemoveMoving(object);
+        }
+
+//        while (movingObjects.back()->GetModel()->GetTranslation().z() <= 999)
+//            movingObjects.pop_back();
+//        for (int i = 0; i < movingObjects.size(); i++){
+//            auto object = movingObjects.at(i)->GetModel();
+//            if (object->GetTranslation().z() <= 999)
+//            {
+//                std::remove(movingObjects.begin(), movingObjects.end(), object);
+//                root->RemoveChild(object);
+//            }
+//        }
+    }
 };

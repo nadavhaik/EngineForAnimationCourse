@@ -22,22 +22,29 @@ float angleBetweenVecs(Vector3f a, Vector3f b){
     return acos(dot/sqrt(lenSq1 * lenSq2));
 }
 
+#define epsilon 17.0f
+
 void MovingObject::MoveForward() {
     float deltaFromBorder = 0;
     auto model = GetModel();
-
     if (IsPrize())
-    {
-        float x = model->GetTranslation().x();
-        float y = model->GetTranslation().y();
-        bool touchingHorizonal = sign(x) * x + deltaFromBorder >= VerticalBorder;
-        bool touchingVertical = sign(y) * y + deltaFromBorder >= HorizontalBorder;
+        model->Translate((velocity/epsilon) * direction);
+    if (IsBomb())
+        model->Translate((velocity/(2 * epsilon)) * direction);
 
-        if (touchingVertical || touchingHorizonal){
-            root->RemoveChild(model);
-        }
-        model->Translate((velocity/5) * direction);
-    }
+
+//    if (IsPrize())
+//    {
+//        float x = model->GetTranslation().x();
+//        float y = model->GetTranslation().y();
+//        bool touchingHorizonal = sign(x) * x + deltaFromBorder >= VerticalBorder;
+//        bool touchingVertical = sign(y) * y + deltaFromBorder >= HorizontalBorder;
+//
+//        if (touchingVertical || touchingHorizonal){
+//            root->RemoveChild(model);
+//        }
+//        model->Translate((velocity/5) * direction);
+//    }
 }
 
 Vector3f NormalBetweenTwoVectors(Vector3f a, Vector3f b){
@@ -103,7 +110,7 @@ void Snake::MoveForward() {
 
 
     // Translate to p2
-    snakeModel->Translate((velocity / 30.0f) * p2);
+    snakeModel->Translate((velocity / epsilon) * p2);
     invisibleBrother->Translate((velocity / 30.0f) * p2);
     // or
     // Do bezier

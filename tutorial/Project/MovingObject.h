@@ -3,7 +3,7 @@
 //
 
 #ifndef ENGINEREWORK_MOVINGOBJECT_H
-enum ObjectType{SNAKE, PRIZE};
+enum ObjectType{SNAKE, PRIZE, BOMB};
 enum SnakeType{HEAD, TAIL};
 #define ENGINEREWORK_MOVINGOBJECT_H
 
@@ -58,6 +58,7 @@ public:
     // collision
 
 
+    bool IsBomb(){return type == BOMB;};
     bool IsPrize(){return type == PRIZE;};
     bool IsSnake(){return type == SNAKE;};
 
