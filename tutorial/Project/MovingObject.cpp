@@ -22,15 +22,15 @@ float angleBetweenVecs(Vector3f a, Vector3f b){
     return acos(dot/sqrt(lenSq1 * lenSq2));
 }
 
-#define epsilon 17.0f
+#define PRIZE_EPSILON 30.0f
 
 void MovingObject::MoveForward() {
     float deltaFromBorder = 0;
     auto model = GetModel();
     if (IsPrize())
-        model->Translate((velocity/epsilon) * direction);
+        model->Translate((velocity/PRIZE_EPSILON) * direction);
     if (IsBomb())
-        model->Translate((velocity/(2 * epsilon)) * direction);
+        model->Translate((velocity/(2 * PRIZE_EPSILON)) * direction);
 
 
 //    if (IsPrize())
@@ -72,6 +72,8 @@ bool SamePos(Vec3 a, Vec3 b){
 
 }
 
+#define SNAKE_EPSILON 12.0f
+
 void Snake::MoveForward() {
     if (rotationsQueue.size() > MAX_QUEUE_SIZE)
             return;
@@ -110,7 +112,7 @@ void Snake::MoveForward() {
 
 
     // Translate to p2
-    snakeModel->Translate((velocity / epsilon) * p2);
+    snakeModel->Translate((velocity / SNAKE_EPSILON) * p2);
     invisibleBrother->Translate((velocity / 30.0f) * p2);
     // or
     // Do bezier
@@ -176,7 +178,7 @@ Snake::Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction,
 
 
 #define MAX_T 1000.0f
-#define MOVEMENT_TIME_INTERVAL 10.0f
+#define MOVEMENT_TIME_INTERVAL 6.0f
 void BezierMoving::MoveForward() {
     bezInfo->t += MOVEMENT_TIME_INTERVAL / MAX_T;
     if(bezInfo->t > 1) {

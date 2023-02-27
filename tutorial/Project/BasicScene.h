@@ -26,7 +26,7 @@
 
 #define MOVEMENT_DISTANCE 0.10f
 
-#define MAX_TIMER_FOR_LAST_SPAWN 1500
+#define MAX_TIMER_FOR_LAST_SPAWN 500
 
 #include "algebra.h"
 

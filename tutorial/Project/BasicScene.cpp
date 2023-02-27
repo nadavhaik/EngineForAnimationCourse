@@ -259,16 +259,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     Eigen::Matrix3f system = camera->GetRotation().transpose();
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
-        if (key == GLFW_KEY_K)
-        {
-            Die();
-            return;
-        }
-        if (key == GLFW_KEY_L)
-        {
-            Win();
-            return;
-        }
         // key checks even in paused game
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
@@ -307,34 +297,6 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 break;
             case GLFW_KEY_RIGHT: case GLFW_KEY_D:
                 Turn(RIGHT);
-                break;
-
-            case GLFW_KEY_1:
-//                if( pickedIndex > 0)
-//                  pickedIndex--;
-                break;
-            case GLFW_KEY_2:
-
-                break;
-            case GLFW_KEY_3:
-                if( tipIndex >= 0)
-                {
-
-                  tipIndex--;
-                }
-                break;
-            case GLFW_KEY_4:
-
-                break;
-            case GLFW_KEY_SPACE:
-                AddToTail(snakeNodes.back());
-                break;
-
-            case GLFW_KEY_B:
-                AddPrizeBezier();
-                break;
-            case GLFW_KEY_Z:
-                AddPrizeLinear();
                 break;
 
         }
@@ -522,8 +484,8 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
             std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
                 << deltaInSystem.z() << ")" << std::endl;
 
-            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
-            if(deviation > 0.01) return;
+            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()}));
+            if(deviation > 1) return;
 
             snake->GetNodeModel()->Translate(fixedDelta);
 //            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
