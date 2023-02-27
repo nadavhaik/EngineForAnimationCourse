@@ -166,3 +166,21 @@ Snake::Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction,
   invisibleBrother->SetTransform(_model->GetTransform());
 
 }
+
+
+#define MAX_T 1000.0f
+#define MOVEMENT_TIME_INTERVAL 10.0f
+void BezierMoving::MoveForward() {
+    bezInfo->t += MOVEMENT_TIME_INTERVAL / MAX_T;
+    if(bezInfo->t > 1) {
+        if(!removed) {
+            root->RemoveChild(model);
+            removed = true;
+        }
+        return;
+    }
+
+    Vec3 newCenter = bezInfo->curve(bezInfo->t);
+
+    model->Translate(newCenter - model->GetTranslation());
+}

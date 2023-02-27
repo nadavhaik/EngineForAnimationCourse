@@ -57,7 +57,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     background->SetPickable(false);
     background->SetStatic();
 
-    topViewCam->Translate(10, Axis::Z);
+    topViewCam->Translate(-20, Axis::Z);
     camera = topViewCam;
 
     AddChild(root = Movable::Create("root")); // a common (invisible) parent object for all the shapes
@@ -277,9 +277,11 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                 AddToTail(snakeNodes.back());
                 break;
 
-
+            case GLFW_KEY_B:
+                AddPrizeBezier();
+                break;
             case GLFW_KEY_Z:
-                AddPrize();
+                AddPrizeLinear();
                 break;
 
         }
@@ -301,7 +303,7 @@ void BasicScene::DetectCollisions() {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
             std::cerr << "Collusion With Tail!!!" << std::endl;
-            exit(-1);
+//            exit(-1);
         }
     }
 
@@ -309,6 +311,7 @@ void BasicScene::DetectCollisions() {
                                                     [](const MovingPtr &obj){return obj->IsPrize();})) {
         if(ModelsCollide(head, prize->GetModel())) {
             RemoveMoving(prize);
+            std::cerr << "Collusion With Prize!!!" << std::endl;
             ShortenSnake();
         }
     }
@@ -526,7 +529,7 @@ Vector3f BasicScene::RandomSpawnPoint(){
 }
 
 
-void BasicScene::AddPrize(){
+void BasicScene::AddPrizeLinear(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
     root->AddChild(newModel);
@@ -548,6 +551,29 @@ void BasicScene::AddPrize(){
 
 //    Node appleNode()
 }
+
+Vec3 BasicScene::RandomPointInBox() {
+    Vec3 min = backgroundBox->GetBoundingBox().min();
+    Vec3 max = backgroundBox->GetBoundingBox().max();
+
+    return {RollRandomAB(min.x(), max.x()),
+            RollRandomAB(min.y(), max.y()),
+            RollRandomAB(min.z(), max.z())};
+}
+
+
+void BasicScene::AddPrizeBezier() {
+    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+    root->AddChild(newModel);
+    newModel->Translate(Vec3(0,0,-10));
+    newModel->Scale(0.02f, Axis::XYZ);
+    Vec3 p0 = newModel->GetTranslation();
+    Vec3 p1 = RandomPointInBox();
+    Vec3 p2 = RandomPointInBox();
+
+    movingObjects.push_back(make_shared<BezierMoving>(newModel, root, CubicBezier(p0, p1, p2)));
+}
+
 
 void BasicScene::SwitchCamera() {
     switch (cameraType) {
@@ -590,3 +616,4 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
     return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
 }
+

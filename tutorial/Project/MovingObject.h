@@ -14,7 +14,7 @@ enum SnakeType{HEAD, TAIL};
 #include "BoundableModel.h"
 #include <queue>
 #include "algebra.h"
-
+#include "bezier_curve.h"
 
 #define HorizontalBorder 9.0f
 #define VerticalBorder 9.0f
@@ -42,6 +42,11 @@ struct FutureRotation {
         recievedAt(recievedAt), rotationCommand(rotationCommand) {};
 };
 
+struct BezierInfo {
+    float t;
+    MovementCurve curve;
+    BezierInfo(MovementCurve curve): t(0), curve(curve) {};
+};
 
 
 class MovingObject {
@@ -56,17 +61,20 @@ public:
     bool IsPrize(){return type == PRIZE;};
     bool IsSnake(){return type == SNAKE;};
 
-    void MoveForward();
+    virtual void MoveForward();
 
     virtual BoundablePtr GetModel(){return model;};
     float GetVelocity(){return velocity;};
     Vector3f direction;
     float velocity;
 
-private:
+protected:
     BoundablePtr model;
-    ObjectType type;
     std::shared_ptr<Movable> root;
+
+
+private:
+    ObjectType type;
 };
 
 #define MovingPtr std::shared_ptr<MovingObject>
@@ -96,5 +104,15 @@ private:
     shared_ptr<NodeModel> snakeModel;
 };
 
+class BezierMoving : public MovingObject {
+public:
+    BezierMoving(BoundablePtr model, std::shared_ptr<Movable> root, MovementCurve curve) :
+        MovingObject(PRIZE, model, {0, 0, 0}, 1.5, root),
+        bezInfo(std::make_shared<BezierInfo>(curve)), removed(false) {};
+    void MoveForward() override;
+private:
+    std::shared_ptr<BezierInfo> bezInfo;
+    bool removed;
+};
 
 #endif //ENGINEREWORK_MOVINGOBJECT_H
