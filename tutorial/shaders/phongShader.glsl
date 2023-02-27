@@ -37,9 +37,9 @@ out vec4 Color;
     dot_prod_specular = float(abs(dot_prod)==dot_prod) * max (dot_prod_specular, 0.0);
     float specular_factor = pow (dot_prod_specular, specular_exponent);
     vec3 Is = Ls * vec3(Ksi) * specular_factor;    // specular intensity
-      Color = color - vec4(Ia + Id +Is, 0);
+//      Color = color - vec4(Ia + Id +Is, 0);
 //      Color = color - vec4(Ia + Id +Is ,0.5);
-//      Color = vec4(Ia + Id +Is ,0.5);
+      Color = vec4(Ia + Id +Is ,0.5);
 
     //= mix(vec4(1,1,1,1), texture(sampler1, texcoordi), texture_factor) * color;
     //if (fixed_color != vec4(0.0)) outColor = fixed_color;
