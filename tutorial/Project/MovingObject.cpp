@@ -25,19 +25,20 @@ float angleBetweenVecs(Vector3f a, Vector3f b){
 void MovingObject::MoveForward() {
     float deltaFromBorder = 0;
     auto model = GetModel();
+    model->Translate((velocity/5) * direction);
 
-    if (IsPrize())
-    {
-        float x = model->GetTranslation().x();
-        float y = model->GetTranslation().y();
-        bool touchingHorizonal = sign(x) * x + deltaFromBorder >= VerticalBorder;
-        bool touchingVertical = sign(y) * y + deltaFromBorder >= HorizontalBorder;
-
-        if (touchingVertical || touchingHorizonal){
-            root->RemoveChild(model);
-        }
-        model->Translate((velocity/5) * direction);
-    }
+//    if (IsPrize())
+//    {
+//        float x = model->GetTranslation().x();
+//        float y = model->GetTranslation().y();
+//        bool touchingHorizonal = sign(x) * x + deltaFromBorder >= VerticalBorder;
+//        bool touchingVertical = sign(y) * y + deltaFromBorder >= HorizontalBorder;
+//
+//        if (touchingVertical || touchingHorizonal){
+//            root->RemoveChild(model);
+//        }
+//        model->Translate((velocity/5) * direction);
+//    }
 }
 
 Vector3f NormalBetweenTwoVectors(Vector3f a, Vector3f b){

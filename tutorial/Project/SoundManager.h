@@ -52,7 +52,10 @@ public:
         uiSoundHandler->LoadSound(SOUND_EFFECT_PATH + LOSE_FILE_NAME);
         uiSoundHandler->PlayOneShot();
     };
-
+    void Mute(){
+        if (muted)  UnMuteAll();
+        else        MuteAll();
+    }
     void MuteAll(){
         snakeSoundHandler->Mute();
         backgroundSoundHandler->Mute();
@@ -79,4 +82,5 @@ private:
     shared_ptr<SoundHandler> backgroundSoundHandler;
     shared_ptr<SoundHandler> uiSoundHandler;
 
+    bool muted =  false;
 };

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "PeriodicExecutor.h"
 #include "types_macros.h"
 #include <memory>
@@ -9,7 +10,8 @@
 #include <numbers>
 #include "functionals.h"
 #include "mutex"
-//#include <Python.h>
+#include "SceneWithImGui.h"
+#include "imgui.h"
 
 #define PrizeMaxVelocity 0.8f
 #define PrizeMinVelocity 0.2f
@@ -26,7 +28,6 @@
 
 enum MovementDirection {RIGHT, LEFT, UP, DOWN};
 enum MovementType {STRAIGHT, TURN};
-
 enum CameraType {POV, TPS, TOP_VIEW};
 
 using namespace Eigen;
@@ -36,10 +37,20 @@ struct SnakeNode {
     float heading{};
 };
 
-class BasicScene : public cg3d::Scene
+enum MenuType {MAIN, GAME, PAUSE, DEATH, WIN};
+struct MenuCords{
+    MenuCords(float x, float y, float udb, float sb): x_pos(x), y_pos(y), up_down_bor(udb), side_bor(sb){}
+    float x_pos;
+    float y_pos;
+    float up_down_bor;
+    float side_bor;
+};
+
+class BasicScene : public cg3d::SceneWithImGui
 {
 public:
-    explicit BasicScene(std::string name, cg3d::Display* display) : Scene(std::move(name), display) {};
+    explicit BasicScene(std::string name, cg3d::Display* display) : SceneWithImGui(std::move(name), display) {};
+    void BuildImGui() override;
     ~BasicScene() override;
     void Init(float fov, int width, int height, float near, float far);
     void Update(const cg3d::Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model) override;
@@ -93,8 +104,7 @@ private:
         soundManager.PlayButtonSoundEffect();
         // TODO
     }
-    void Mute(){soundManager.MuteAll();};
-    void UnMute(){soundManager.UnMuteAll();};
+    void Mute(){soundManager.Mute();};
 
     void Turn(MovementDirection type);
 
@@ -125,5 +135,41 @@ private:
     std::mutex mtx;
     cg3d::Viewport* viewport = nullptr;
     int lastQueueSize;
+
+
+    MenuType DrawMainMenu();
+    MenuType DrawGameMenu();
+    MenuType DrawPauseMenu();
+    MenuType DrawDeathMenu();
+    MenuType DrawWinMenu();
+
+
+    MenuType menuType = MAIN;
+
+    shared_ptr<MenuCords> menuCords;
+    shared_ptr<MenuCords> gameCords;
+
+    shared_ptr<MenuCords> GetCords(){
+        switch (menuType) {
+            case GAME:
+                return gameCords;
+            case MAIN:
+            case PAUSE:
+            case DEATH:
+            case WIN:
+            default:
+                return menuCords;
+        };
+    }
+
+    void ResetSnake();
+
+    void Reset(){
+        ResetSnake();
+        // delete the models
+        for (int i = 0; i < movingObjects.size(); i++)
+            root->RemoveChild(movingObjects[i]->GetModel());
+        movingObjects.clear();
+    };
 
 };

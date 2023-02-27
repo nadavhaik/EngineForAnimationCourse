@@ -37,6 +37,11 @@ using namespace cg3d;
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
+    // init gui
+    gameCords = make_shared<MenuCords>(1671,68 ,120 ,124);
+    menuCords = make_shared<MenuCords>(650,200 ,500 ,550);
+
+    // init sound
     soundManager.InitManager();
 
 
@@ -93,7 +98,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     Eigen::MatrixXd vertices(6,3);
     vertices << -1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1;
     Eigen::MatrixXi faces(3,2);
-    faces << 0,1,2,3,4,5;
+    faces << 0,1,2,3,4,50;
     Eigen::MatrixXd vertexNormals = Eigen::MatrixXd::Ones(6,3);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Ones(6,2);
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
@@ -107,6 +112,44 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
 
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
+}
+
+void BasicScene::ResetSnake(){
+
+    // delete old model
+    auto oldModel = snakeNodes[0]->GetNodeModel();
+    root->RemoveChild(oldModel);
+    oldModel->RemoveChild(povCam);
+    oldModel->RemoveChild(tpsCam);
+    // delete all snakes afterwards
+    for(int i = 0; i < snakeNodes.size(); i++)
+            root->RemoveChild(snakeNodes[i]->GetNodeModel());
+    snakeNodes.clear();
+
+    // create new model
+    auto program = std::make_shared<Program>("shaders/phongShader");
+    auto program1 = std::make_shared<Program>("shaders/pickingShader");
+    auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
+    root->AddChild(snakeRoot);
+    snakeRoot->AddChild(povCam);
+    snakeRoot->AddChild(tpsCam);
+    snakeRoot->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+    snakeRoot->Translate(-10, Axis::Z);
+
+    Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Eigen::Vector3f (0,0,1), nullptr, root, 0.0f);
+    snakeNodes.push_back(make_shared<Snake>(head));
+
+
+    // reset cameras
+
+
+//    int numOfStartChildren = 1;
+    int numOfStartChildren = 4;
+
+    for(int i=0; i<numOfStartChildren; i++) {
+        AddToTail(snakeNodes.back());
+    }
+
 }
 
 void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, const Eigen::Matrix4f& view, const Eigen::Matrix4f& model)
@@ -123,11 +166,17 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 //    snakeNodes[0]->Translate(0.01f, Axis::Y);
 }
 
+
 void BasicScene::MouseCallback(Viewport* viewport, int x, int y, int button, int action, int mods, int buttonState[])
 {
     // note: there's a (small) chance the button state here precedes the mouse press/release event
-
+    auto currentMenuCords = GetCords();
+    auto xDis = currentMenuCords->x_pos + currentMenuCords->side_bor;
+    auto yDis = currentMenuCords->y_pos + currentMenuCords->up_down_bor;
     if (action == GLFW_PRESS) { // default mouse button press behavior
+        if (x <= xDis && y<= yDis)
+            return;
+
         SwitchCamera();
 
 //        PickVisitor visitor;
@@ -207,6 +256,21 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
     Eigen::Matrix3f system = camera->GetRotation().transpose();
 
     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+        // key checks even in paused game
+        switch (key) // NOLINT(hicpp-multiway-paths-covered)
+        {
+            case GLFW_KEY_TAB:
+                SwitchCamera();
+                break;
+            case GLFW_KEY_ESCAPE:
+                glfwSetWindowShouldClose(window, GLFW_TRUE);
+                break;
+
+        }
+        // checks if and only if game isnt paused
+        if (menuType != GAME)
+            return;
+
         switch (key) // NOLINT(hicpp-multiway-paths-covered)
         {
             case GLFW_KEY_1:
@@ -284,12 +348,15 @@ void BasicScene::DetectCollisions() {
 }
 
 void BasicScene::PeriodicFunction() {
+    if (menuType != GAME)
+        return;
+
     mtx.lock();
 
     int size = snakeNodes[0]->rotationQueue.size();
 //    if (size  == MAX_QUEUE_SIZE - 1)
 //        snakeNodes[0]->ClearQueue();
-    cout<<size<<"\n"<<endl;
+//    cout<<size<<"\n"<<endl;
 
     shared_ptr<Snake> snake = snakeNodes[0];
     while (snake != nullptr){
@@ -519,3 +586,217 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 }
 
 
+
+
+void BasicScene::BuildImGui()
+{
+    switch (menuType) {
+        case MAIN:
+            menuType = DrawMainMenu();
+            break;
+        case GAME:
+            menuType = DrawGameMenu();
+            break;
+        case PAUSE:
+            menuType = DrawPauseMenu();
+            break;
+        case DEATH:
+            menuType = DrawDeathMenu();
+            break;
+        case WIN:
+            menuType = DrawWinMenu();
+            break;
+        default:
+            menuType = DrawMainMenu();
+            break;
+    };
+    // CHANGE
+    ImGui::Begin("Debug Menus", nullptr, ImGuiWindowFlags_None );
+    ImGui::SetWindowPos(ImVec2(0,0), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(0,0), ImGuiCond_Always);
+
+    if (ImGui::Button ("Main Menu")){menuType = MAIN;}
+    if (ImGui::Button ("Game Menu")){menuType = GAME;}
+    if (ImGui::Button ("Pause Menu")){menuType = PAUSE;}
+    if (ImGui::Button ("Death Menu")){menuType = DEATH;}
+    if (ImGui::Button ("Win Menu")){menuType = WIN;}
+    ImGui::End();
+}
+
+#define NOT_YET_IMPLEMENTED cout<<"'Moshe Not Yet Implemented!!\n"<<endl
+#define LABEL_SIZE 2
+#define BUTTON_SIZE 1.5
+
+/**
+ * drawing the game menu. returns the needed next menu type (game mode)
+ */
+MenuType BasicScene::DrawMainMenu() {
+    MenuType ans = MAIN;
+    shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    // CHANGE
+    ImGui::Begin("Main Menu", pOpen, flags);
+    ImGui::SetWindowFontScale(LABEL_SIZE);
+    ImGui::Text("\n\n\t\t\t\tSnake 3D\n\t\tMade by Mattan and Nadav");
+    ImGui::Text("\n\n\n\n\n\n");
+    ImGui::SetWindowFontScale(BUTTON_SIZE);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+
+    if (ImGui::Button ("\t\t\t\t\tPlay the Game\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t  Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){exit(0); soundManager.PlayButtonSoundEffect();}
+    ImGui::End();
+    return ans;
+}
+/**
+ *
+ * @return
+ */
+MenuType BasicScene::DrawGameMenu() {
+    MenuType ans = GAME;
+    shared_ptr<MenuCords> cords = GetCords();
+
+    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    ImGui::Begin("Menu", pOpen, flags);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+    ImGui::SetWindowFontScale(0.5);
+    ImGui::Text("");
+    ImGui::SetWindowFontScale(6.5);
+    if (ImGui::Button ("||")){ans = PAUSE; soundManager.PlayButtonSoundEffect();}
+    ImGui::End();
+
+    return ans;
+}
+/**
+ *
+ * @return the next game mode
+ */
+MenuType BasicScene::DrawPauseMenu() {
+    MenuType ans =  PAUSE;
+    shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    ImGui::Begin("Pause Menu", pOpen, flags);
+    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::Text("\n\n\n  \t\tPause Menu");
+    ImGui::Text("\n\n\n");
+    ImGui::SetWindowFontScale(BUTTON_SIZE);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+    if (ImGui::Button ("\t\t\t\t\t   Resume\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
+    ImGui::Text("\n\n");
+    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    ImGui::End();
+    return ans;
+}
+
+MenuType BasicScene::DrawDeathMenu() {
+    MenuType ans = DEATH;
+    shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    // CHANGE
+    ImGui::Begin("Death Menu", pOpen, flags);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
+    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
+    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
+    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
+    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
+    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
+    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
+    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
+    // CHANGE
+    if (ImGui::Button ("Print Cords.")) {
+        cout << "deathCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
+    }
+    if (ImGui::Button ("Main Menu")){ans = MAIN;}
+    if (ImGui::Button ("Game Menu")){ans = GAME;}
+    if (ImGui::Button ("Pause Menu")){ans = PAUSE;}
+    if (ImGui::Button ("Death Menu")){ans = DEATH;}
+    if (ImGui::Button ("Win Menu")){ans = WIN;}
+    ImGui::End();
+    return ans;
+}
+
+MenuType BasicScene::DrawWinMenu() {
+    MenuType ans = WIN;
+    shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    // CHANGE
+    ImGui::Begin("Win Menu", pOpen, flags);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
+    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
+    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
+    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
+    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
+    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
+    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
+    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
+    // CHANGE
+    if (ImGui::Button ("Print Cords.")) {
+        cout << "winCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
+    }
+    if (ImGui::Button ("Main Menu")){ans = MAIN;}
+    if (ImGui::Button ("Game Menu")){ans = GAME;}
+    if (ImGui::Button ("Pause Menu")){ans = PAUSE;}
+    if (ImGui::Button ("Death Menu")){ans = DEATH;}
+    if (ImGui::Button ("Win Menu")){ans = WIN;}
+    ImGui::End();
+    return ans;
+}
+
+
+/**
+*
+ * relocate and move menus
+ *  shared_ptr<MenuCords> cords = GetCords();
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    bool* pOpen = nullptr;
+
+    // CHANGE
+    ImGui::Begin("Win Menu", pOpen, flags);
+    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
+    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
+
+      if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
+    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
+    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
+    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
+    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
+    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
+    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
+    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
+    // CHANGE
+    if (ImGui::Button ("Print Cords.")) {
+        cout << "winCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
+    }
+    if (ImGui::Button ("Main Menu")){ans = MAIN;}
+    if (ImGui::Button ("Game Menu")){ans = GAME;}
+    if (ImGui::Button ("Pause Menu")){ans = PAUSE;}
+    if (ImGui::Button ("Death Menu")){ans = DEATH;}
+    if (ImGui::Button ("Win Menu")){ans = WIN;}
+    ImGui::End();
+*/
