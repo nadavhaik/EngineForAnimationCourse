@@ -109,7 +109,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
  
 
-    auto snakeRoot = NodeModel::Create("snake", nodeMesh, snakeMaterial);
+    auto snakeRoot = NodeModel::Create("snake", snakeMesh, snakeMaterial);
     root->AddChild(snakeRoot);
     snakeRoot->AddChild(povCam);
     snakeRoot->AddChild(tpsCam);

@@ -75,7 +75,6 @@ public:
 
     Eigen::Vector3f RandomSpawnPoint();
     void AddPrize();
-    Vector3f RandomSpawnPoint();
     Vec3 RandomPointInBox();
     void AddPrizeLinear();
     void AddPrizeBezier();
@@ -193,7 +192,7 @@ private:
 
     int score = 0;
 
-    Vec3 snakeStartPo = {-20, 0, -10};
+    Vec3 snakeStartPo = {-10, 0, -10};
 
     void ClearMovingObjectList(){
         for (auto &object: movingObjects){
