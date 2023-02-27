@@ -14,8 +14,8 @@
 #include "imgui.h"
 #include "SkinnedSnakeModel.h"
 
-#define PrizeMaxVelocity 0.8f
-#define PrizeMinVelocity 0.2f
+#define PrizeMaxVelocity 8.0f
+#define PrizeMinVelocity 2.0f
 
 
 #define UPDATE_INTERVAL_MILLIS 20
@@ -75,6 +75,7 @@ public:
     void Rotate(shared_ptr<Snake> snake);
 
     Eigen::Vector3f RandomSpawnPoint();
+    Axis RandomAxis();
     void AddPrize();
     Vec3 RandomPointInBox();
     void AddPrizeLinear();
@@ -99,6 +100,10 @@ private:
 
         if (snakeNodes.size() <= 1) // if only head remaining
             Die();
+    }
+    void Hit() {
+        soundManager.PlayHitSoundEffect();
+        ShortenSnake();
     }
     void EatPrize(std::shared_ptr<MovingObject> object){
         RemoveMoving(object);

@@ -12,6 +12,8 @@ void DrawVisitor::Run(Scene* _scene, Camera* camera)
 {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glEnable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
 
     if (drawOutline) {
         glEnable(GL_STENCIL_TEST);

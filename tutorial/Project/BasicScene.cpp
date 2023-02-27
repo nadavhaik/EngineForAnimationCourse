@@ -35,10 +35,13 @@
 
 using namespace cg3d;
 
+#define FOG_ENABLED 1
 
 
 void BasicScene::Init(float fov, int width, int height, float near, float far)
 {
+
+
     // init gui
     gameCords = make_shared<MenuCords>(1671,68 ,120 ,124);
     menuCords = make_shared<MenuCords>(650,200 ,550 ,550);
@@ -216,6 +219,9 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);
+    Vec3 cameraPos = camera->GetTranslation();
+    program.SetUniform3f("cameraPos", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    program.SetUniform1i("fog_enabled", FOG_ENABLED);
     program.SetUniform4f("light_position", 0.0, 15.0f, 0.0, 1.0f);
 
     // if its a MovingObject, find its moving object
@@ -357,8 +363,7 @@ void BasicScene::DetectCollisions() {
     for(int i=2; i<snakeNodes.size(); i++) {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
-            std::cerr << "Collusion With Tail!!!" << std::endl;
-//            exit(-1);
+            Hit();
         }
     }
 
@@ -597,6 +602,10 @@ Eigen::Vector3f  BasicScene::RandomSpawnPoint(){
 void BasicScene::AddPrizeLinear(){
     // create the model for the apple
     auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
+    auto axis = RandomAxis();
+    float angle = RollRandomAB(0, 2 * std::numbers::pi);
+
+    newModel->Rotate(angle, axis);
 
     auto velocity = RollRandomAB(PrizeMinVelocity, PrizeMaxVelocity);
 
@@ -629,7 +638,6 @@ Vec3 BasicScene::RandomPointInBox() {
             RollRandomAB(min.y(), max.y()),
             RollRandomAB(min.z(), max.z())};
 }
-
 
 void BasicScene::AddPrizeBezier() {
     auto newModel = BallModel::Create("prize", bombMesh, bombMaterial);
@@ -950,5 +958,16 @@ void BasicScene::DrawPlayerStats() {
 
 bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
     return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
+}
+
+Axis BasicScene::RandomAxis() {
+    float t = RollRandomAB(0, 3);
+    if(0 <= t && t < 1) {
+        return Axis::X;
+    } else if(1 <= t && t < 2) {
+        return Axis::Y;
+    }
+
+    return Axis::Z;
 }
 
