@@ -380,7 +380,7 @@ void BasicScene::DetectCollisions() {
 
     if(!InBox(head)) {
         std::cerr << "Head is not in box!" << std::endl;
-        exit(-1);
+        Die();
     }
 }
 
