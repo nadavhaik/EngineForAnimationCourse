@@ -120,7 +120,7 @@ float BallModel::GetScaledRadius() {
     assert(scaling.x() - scaling.y() < 0.0001);
     assert(scaling.y() - scaling.z() < 0.0001);
 
-    return BALL_RADIUS * scaling.x();
+    return radius * scaling.x();
 }
 
 
