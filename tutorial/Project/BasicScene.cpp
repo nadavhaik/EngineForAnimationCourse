@@ -95,13 +95,11 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     bombMaterial = {std::make_shared<Material>("bombMaterial", bombShader)}; // empty apple material
     spawnerMaterial = {std::make_shared<Material>("spawnerMaterial", spawnerShader)};
 
-    // TODO: change textures
     snakeMaterial->AddTexture(0, "textures/box0.bmp", 2);
     prizeMaterial->AddTexture(0, "textures/grass.bmp", 2);
     bombMaterial->AddTexture(0, "textures/grass.bmp", 2);
     spawnerMaterial->AddTexture(0, "textures/grass.bmp", 2);
 
-    // TODO: change meshes
     snakeMesh = {IglLoader::MeshFromFiles("snake","data/snake2.obj")};
     prizeMesh = {IglLoader::MeshFromFiles("prize" ,"data/ball.obj")};
     bombMesh = {IglLoader::MeshFromFiles("bomb" ,"data/ball.obj")};
@@ -128,7 +126,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 
     tpsCam->RotateInSystem(tpsCam->GetRotation(), std::numbers::pi, Axis::Y);
     tpsCam->RotateInSystem(povCam->GetRotation(), std::numbers::pi / 8.0, Axis::Z);
-    tpsCam->Translate({0, 5, -7});
+    tpsCam->Translate({0, 2.65, -5});
 
     Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Eigen::Vector3f (0,0,1), nullptr, root, 0.0f);
     snakeNodes.push_back(make_shared<Snake>(head));
@@ -213,7 +211,8 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
         }
      */
 
-    mtx.lock();
+
+//    mtx.lock();
     Scene::Update(program, proj, view, model);
     program.SetUniform4f("lightColor", 0.80078125f, 0.51953125f, 0.24609375f, 1.0f);
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
@@ -227,7 +226,7 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
     // if its a MovingObject, find its moving object
 
 
-    mtx.unlock();
+//    mtx.unlock();
 //    cyl->Rotate(0.001f, Axis::Y);
 //    snakeNodes[0]->Translate(0.01f, Axis::Y);
 }
@@ -393,6 +392,14 @@ void BasicScene::PeriodicFunction() {
         return;
     }
     mtx.lock();
+
+    if (levelTimer % (MAX_TIMER_FOR_LAST_SPAWN / ((ScoreToPass() + BombNum()))) == 0)
+        if (RollRandomAB(0.0f,1.0f) < 0.5f) AddPrizeLinear();
+        else AddPrizeBezier();
+
+
+    levelTimer++;
+
 
     int size = snakeNodes[0]->rotationsQueue.size();
 //    if (size  == MAX_QUEUE_SIZE - 1)
@@ -640,6 +647,8 @@ Vec3 BasicScene::RandomPointInBox() {
 }
 
 void BasicScene::AddPrizeBezier() {
+    if (bombsSpawned >= BombNum()) return;
+    bombsSpawned++;
     auto newModel = BallModel::Create("prize", bombMesh, bombMaterial);
     root->AddChild(newModel);
     newModel->Translate(Vec3(0,0,-10));
@@ -911,7 +920,7 @@ void BasicScene::DrawPlayerStats() {
     bool* pOpen = nullptr;
 
     ImGui::Begin("Player Stats", pOpen, flags);
-    ImGui::SetWindowPos(ImVec2(721, 68), ImGuiCond_Always);
+    ImGui::SetWindowPos(ImVec2(685, 68), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(474, 50), ImGuiCond_Always);
 
     ImGui::SetWindowFontScale(2);

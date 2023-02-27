@@ -26,7 +26,7 @@
 
 #define MOVEMENT_DISTANCE 0.10f
 
-#define MAX_TIMER_FOR_LAST_SPAWN 200
+#define MAX_TIMER_FOR_LAST_SPAWN 1500
 
 #include "algebra.h"
 
@@ -198,9 +198,9 @@ private:
         ResetEnv();
         currentLevel = 1;
     }
-    void RestartLevel(){
-        ResetEnv();
-    }
+//    void RestartLevel(){
+//        ResetEnv();
+//    }
     void NextLevel(){
         ResetEnv();
         currentLevel++;
@@ -219,6 +219,7 @@ private:
     int startingHealth = 0;
     int currentLevel = 1;
     int levelTimer = 1;
+    int bombsSpawned = 0;
     int ScoreToPass(){return static_cast<int>(3 + 2.35 * currentLevel);}
     int BombNum(){return 2 * ScoreToPass();}
 
