@@ -141,11 +141,8 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
 
 //    int numOfStartChildren = 1;
-    int numOfStartChildren = 4;
-
-    for(int i=0; i<numOfStartChildren; i++) {
-        AddToTail(snakeNodes.back());
-    }
+    int numOfStartChildren = 5;
+    RecreateSnake(numOfStartChildren);
 
 //    (std::string name, std::shared_ptr<cg3d::Mesh> mesh,
 //            std::shared_ptr<cg3d::Material> material, std::vector<std::shared_ptr<Model>> joints);
@@ -162,13 +159,15 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 //    root->AddChild(snakeSkin);
 
 
+    startingHealth = snakeNodes.size();
 
 
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
+
 }
 
 void BasicScene::ResetSnake(){
-
+    int lastHealth = snakeNodes.size() - 1;
     // delete old model
     auto oldModel = snakeNodes[0]->GetNodeModel();
     root->RemoveChild(oldModel);
@@ -176,7 +175,7 @@ void BasicScene::ResetSnake(){
     oldModel->RemoveChild(tpsCam);
     // delete all snakes afterwards
     for(int i = 0; i < snakeNodes.size(); i++)
-            root->RemoveChild(snakeNodes[i]->GetNodeModel());
+        root->RemoveChild(snakeNodes[i]->GetNodeModel());
     snakeNodes.clear();
 
     // create new model
@@ -192,12 +191,9 @@ void BasicScene::ResetSnake(){
     Snake head(HEAD, snakeRoot, snakeRoot->GetRotation()*Eigen::Vector3f (0,0,1), nullptr, root, 0.0f);
     snakeNodes.push_back(make_shared<Snake>(head));
 
-
-    // reset cameras
-
-
-//    int numOfStartChildren = 1;
-    int numOfStartChildren = 4;
+    RecreateSnake(lastHealth);
+}
+void BasicScene::RecreateSnake(int numOfStartChildren){
 
     for(int i=0; i<numOfStartChildren; i++) {
         AddToTail(snakeNodes.back());
@@ -284,31 +280,10 @@ void BasicScene::KeyCallback(Viewport* viewport, int x, int y, int key, int scan
                     case PAUSE:
                         menuType = GAME;
                         break;
-                    case MAIN:
-                        glfwSetWindowShouldClose(window, GLFW_TRUE);
-                        break;
                     default:
-                        menuType = MAIN;
-                }
-                break;
-            // click Play on Main Menu, click Resume on Pause Menu, click Restart on Lose Menu, click Next on Win Menu.
-            case GLFW_KEY_SPACE: case GLFW_KEY_ENTER:
-                switch(menuType){
-                    case GAME:
-                        break;
-                    default:
-                        menuType = GAME;
                         break;
                 }
                 break;
-            case GLFW_KEY_M:
-                switch(menuType){
-                    case GAME: case PAUSE:
-                        Mute();
-                        break;
-                    default:
-                        break;
-                }
         }
         // checks if and only if game isnt paused
         if (menuType != GAME)
@@ -710,11 +685,10 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
 void BasicScene::BuildImGui()
 {
-    bool drawPlayerStats = true;
+    bool drawPlayerStats = false;
     switch (menuType) {
         case MAIN:
             menuType = DrawMainMenu();
-            drawPlayerStats = false;
             break;
         case BETWEEN:
             menuType = DrawBetweenMenu();
@@ -722,6 +696,7 @@ void BasicScene::BuildImGui()
             break;
         case GAME:
             menuType = DrawGameMenu();
+            drawPlayerStats = true;
             break;
         case PAUSE:
             menuType = DrawPauseMenu();
@@ -755,8 +730,8 @@ void BasicScene::BuildImGui()
 }
 
 #define NOT_YET_IMPLEMENTED cout<<"'Moshe Not Yet Implemented!!\n"<<endl
-#define LABEL_SIZE 2
-#define BUTTON_SIZE 1.5
+#define LABEL_SIZE 2.4
+#define BUTTON_SIZE 1.7
 
 /**
  * drawing the game menu. returns the needed next menu type (game mode)
@@ -764,24 +739,24 @@ void BasicScene::BuildImGui()
 MenuType BasicScene::DrawMainMenu() {
     MenuType ans = MAIN;
     shared_ptr<MenuCords> cords = GetCords();
-    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     bool* pOpen = nullptr;
 
     // CHANGE
     ImGui::Begin("Welcome! First time here?", pOpen, flags);
     ImGui::SetWindowFontScale(LABEL_SIZE);
-    ImGui::Text("\n\n\t\t\t\tSnake 3D\n\t\tMade by Mattan and Nadav");
-    ImGui::Text("\n\n\n\n\n\n");
+    ImGui::Text("\n\n\t\t\tSnake 3D\n\tMade by Mattan and Nadav");
+    ImGui::Text("\n\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
 
-    if (ImGui::Button ("\t\t\t\t\tPlay the Game\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\tPlay the Game\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t  Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t  Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+    if (ImGui::Button ("\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
     ImGui::End();
     return ans;
 }
@@ -797,7 +772,7 @@ MenuType BasicScene::DrawBetweenMenu() {
     bool* pOpen = nullptr;
 
     ImGui::Begin(/* TODO : if level is bigger than some big num like 10 write holy shit or smth*/"Level $ Menu", pOpen, flags);
-    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::SetWindowFontScale(LABEL_SIZE);
     ImGui::Text("\n\n\n  \t\tLevel X Menu"); // TODO
     ImGui::Text("\t You need to get X prizes"); // TODO
     ImGui::Text("\n\n\n");
@@ -805,9 +780,9 @@ MenuType BasicScene::DrawBetweenMenu() {
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t\t   Start\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t   Start\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect();}
     ImGui::End();
     return ans;
 }
@@ -845,20 +820,20 @@ MenuType BasicScene::DrawPauseMenu() {
     bool* pOpen = nullptr;
 
     ImGui::Begin("Pause Menu", pOpen, flags);
-    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
-    ImGui::Text("\n\n\n  \t\tPee Break Menu");
-    ImGui::Text("  \t\tX / Y killed so far"); // TODO
-    ImGui::Text("  \t\tIn level Z"); // TODO
-    ImGui::Text("\n\n\n");
+    ImGui::SetWindowFontScale(LABEL_SIZE );
+    ImGui::Text("\n\n\t\"Pee Break\" Menu! Level Z\n");
+    ImGui::Text("  X / Y prizes collected so far"); // TODO
+    ImGui::Text("  H needed for the next level\n"); // TODO
+    ImGui::Text("\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t\t   Resume\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t   Resume\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t Mute Sound\t\t\t\t\t  ")){Mute(); soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::End();
     return ans;
 }
@@ -872,20 +847,20 @@ MenuType BasicScene::DrawDeathMenu() {
     // CHANGE
     ImGui::Begin(/* TODO : if score needed to pass is 1/5 out of needed show so close, else show you were trying*/"Oh no! You were so close!", pOpen, flags);
 
-    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
+    ImGui::SetWindowFontScale(LABEL_SIZE);
     ImGui::Text("\n\n\n  \t\tYou Died!");
-    ImGui::Text("  \tYou Killed X / Y"); // TODO
+    ImGui::Text("  \t You Killed X / Y"); // TODO
     ImGui::Text("  \t\tIn level Z"); // TODO
     ImGui::Text("\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); Reset();} // TODO : CHANGE TO RESET LEVEL
+    if (ImGui::Button ("\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); RestartLevel();} // TODO : CHANGE TO RESET LEVEL
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+    if (ImGui::Button ("\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
 
     ImGui::End();
     return ans;
@@ -900,20 +875,20 @@ MenuType BasicScene::DrawWinMenu() {
     // CHANGE
     ImGui::Begin("Congrats! You Won!", pOpen, flags);
 
-    ImGui::SetWindowFontScale(LABEL_SIZE * 1.3);
-    ImGui::Text("\n\n\n  \tYou did amazing!");
+    ImGui::SetWindowFontScale(LABEL_SIZE);
+    ImGui::Text("\n\n\n   \tYou did amazing!");
     ImGui::Text("  \tYou beat level Z"); // TODO
-    ImGui::Text("  \tBu eating X prizes!"); // TODO
+    ImGui::Text("  \t  BY eating X prizes!"); // TODO
     ImGui::Text("\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t\t  Next Level\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); Reset();} // TODO : CHANGE TO append LEVEL
+    if (ImGui::Button ("\t\t\t\tNext Level\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); NextLevel();} // TODO : CHANGE TO append LEVEL
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); Reset();}
+    if (ImGui::Button ("\t\t\t\t Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
+    if (ImGui::Button ("\t\t\t\t\tQuit\t\t\t\t\t\t")){soundManager.PlayButtonSoundEffect(); glfwSetWindowShouldClose(window, GLFW_TRUE);}
 
     ImGui::End();
     return ans;
@@ -937,9 +912,9 @@ void BasicScene::DrawPlayerStats() {
 //    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
 
-    ImGui::SetWindowFontScale(LABEL_SIZE);
+    ImGui::SetWindowFontScale(2);
     string healthText = "Health : " + std::to_string(snakeNodes.size() - 1);
-    string scoreText = "Score : " + std::to_string(score);
+    string scoreText = "Score : " + std::to_string(score) + " / XX"; // TODO add neede dscore
     string text = healthText + "\t|\t" + scoreText;
     ImGui::Text(text.c_str());
 

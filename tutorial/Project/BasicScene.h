@@ -184,8 +184,24 @@ private:
     }
 
     void ResetSnake();
+    void RecreateSnake(int numOfStartChildren);
 
-    void Reset(){
+    void RestartGame(){
+        RecreateSnake(startingHealth - snakeNodes.size());
+        ResetEnv();
+        // TODO make levels - the FIRST LEVEL HERE \/
+
+    }
+    void RestartLevel(){
+        RecreateSnake(startingHealth - snakeNodes.size());
+        ResetEnv();
+        // TODO make levels - THE SAME LEVEL HERE \/
+    }
+    void NextLevel(){
+        ResetEnv();
+        // TODO make levels - THE NEXT LEVEL HERE \/
+    }
+    void ResetEnv(){
         ResetSnake();
 
         ClearMovingObjectList();
@@ -194,6 +210,7 @@ private:
     };
 
     int score = 0;
+    int startingHealth = 0;
 
     Vec3 snakeStartPo = {-10, 0, -10};
 
@@ -203,16 +220,5 @@ private:
         }
 
         movingObjects.clear();
-
-//        while (movingObjects.back()->GetModel()->GetTranslation().z() <= 999)
-//            movingObjects.pop_back();
-//        for (int i = 0; i < movingObjects.size(); i++){
-//            auto object = movingObjects.at(i)->GetModel();
-//            if (object->GetTranslation().z() <= 999)
-//            {
-//                std::remove(movingObjects.begin(), movingObjects.end(), object);
-//                root->RemoveChild(object);
-//            }
-//        }
     }
 };
