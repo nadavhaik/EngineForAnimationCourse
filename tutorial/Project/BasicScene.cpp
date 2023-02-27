@@ -383,7 +383,10 @@ void BasicScene::DetectCollisions() {
 void BasicScene::PeriodicFunction() {
     if (menuType != GAME)
         return;
-
+    if (score >= ScoreToPass()){
+        Win();
+        return;
+    }
     mtx.lock();
 
     int size = snakeNodes[0]->rotationsQueue.size();
@@ -770,12 +773,13 @@ MenuType BasicScene::DrawBetweenMenu() {
     shared_ptr<MenuCords> cords = GetCords();
     int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     bool* pOpen = nullptr;
-
-    ImGui::Begin(/* TODO : if level is bigger than some big num like 10 write holy shit or smth*/"Level $ Menu", pOpen, flags);
+    string levelMenu = "Level " + std::to_string(currentLevel) + " " + (currentLevel >= 4 ? "holy shit!" : "");
+    ImGui::Begin(levelMenu.c_str(), pOpen, flags);
     ImGui::SetWindowFontScale(LABEL_SIZE);
-    ImGui::Text("\n\n\n  \t\tLevel X Menu"); // TODO
-    ImGui::Text("\t You need to get X prizes"); // TODO
-    ImGui::Text("\n\n\n");
+    ImGui::Text(("\n \t\t\tLevel " + std::to_string(currentLevel)).c_str());
+    ImGui::Text(("\n\n\tYou need to get " + std::to_string(ScoreToPass()) + " prizes.").c_str());
+    ImGui::Text("\n\t\t\tGood luck!");
+    ImGui::Text("\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
@@ -821,9 +825,9 @@ MenuType BasicScene::DrawPauseMenu() {
 
     ImGui::Begin("Pause Menu", pOpen, flags);
     ImGui::SetWindowFontScale(LABEL_SIZE );
-    ImGui::Text("\n\n\t\"Pee Break\" Menu! Level Z\n");
-    ImGui::Text("  X / Y prizes collected so far"); // TODO
-    ImGui::Text("  H needed for the next level\n"); // TODO
+    ImGui::Text(("\n\n\t\"Pee Break\" Menu! Level " + std::to_string(currentLevel)).c_str());
+    ImGui::Text(("  " + std::to_string(score) + " out of " + std::to_string(ScoreToPass()) + " prizes collected.").c_str());
+    ImGui::Text(("  " + std::to_string(ScoreToPass() - score) + " needed for the next level.\n").c_str());
     ImGui::Text("\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
@@ -848,15 +852,15 @@ MenuType BasicScene::DrawDeathMenu() {
     ImGui::Begin(/* TODO : if score needed to pass is 1/5 out of needed show so close, else show you were trying*/"Oh no! You were so close!", pOpen, flags);
 
     ImGui::SetWindowFontScale(LABEL_SIZE);
-    ImGui::Text("\n\n\n  \t\tYou Died!");
-    ImGui::Text("  \t You Killed X / Y"); // TODO
-    ImGui::Text("  \t\tIn level Z"); // TODO
+    ImGui::Text("\n\n\n  \t\tNooo you died!");
+    ImGui::Text(("  \t You got " + std::to_string(score) + " out of " + std::to_string(ScoreToPass())).c_str());
+    ImGui::Text(("  \t\tin level " + std::to_string(currentLevel)).c_str());
     ImGui::Text("\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); RestartLevel();} // TODO : CHANGE TO RESET LEVEL
+    if (ImGui::Button ("\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); RestartLevel();}
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
@@ -872,19 +876,20 @@ MenuType BasicScene::DrawWinMenu() {
     int flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     bool* pOpen = nullptr;
 
+    string text;
     // CHANGE
     ImGui::Begin("Congrats! You Won!", pOpen, flags);
 
     ImGui::SetWindowFontScale(LABEL_SIZE);
     ImGui::Text("\n\n\n   \tYou did amazing!");
-    ImGui::Text("  \tYou beat level Z"); // TODO
-    ImGui::Text("  \t  BY eating X prizes!"); // TODO
+    ImGui::Text(("  \t  You beat level " + std::to_string(currentLevel)).c_str());
+    ImGui::Text(("  \t  by eating " + std::to_string(ScoreToPass()) + " prizes!").c_str());
     ImGui::Text("\n\n\n");
     ImGui::SetWindowFontScale(BUTTON_SIZE);
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\tNext Level\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); NextLevel();} // TODO : CHANGE TO append LEVEL
+    if (ImGui::Button ("\t\t\t\tNext Level\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); NextLevel();}
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
@@ -902,34 +907,11 @@ void BasicScene::DrawPlayerStats() {
     ImGui::SetWindowPos(ImVec2(721, 68), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(474, 50), ImGuiCond_Always);
 
-//    shared_ptr<MenuCords> cords = GetCords();
-//    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
-//    bool* pOpen = nullptr;
-//
-//    // CHANGE
-//    ImGui::Begin("Player Stats", pOpen, flags);
-//    ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
-//    ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
-
-
     ImGui::SetWindowFontScale(2);
     string healthText = "Health : " + std::to_string(snakeNodes.size() - 1);
-    string scoreText = "Score : " + std::to_string(score) + " / XX"; // TODO add neede dscore
+    string scoreText = "Score : " + std::to_string(score) + " / " + std::to_string(ScoreToPass());
     string text = healthText + "\t|\t" + scoreText;
     ImGui::Text(text.c_str());
-
-//    if (ImGui::Button ("<-")) {cords->x_pos -= 50;}
-//    if (ImGui::Button ("->")) {cords->x_pos+= 50;}
-//    if (ImGui::Button ("/|\\")) {cords->y_pos+= 50;}
-//    if (ImGui::Button ("\\|/")) {cords->y_pos-= 50;}
-//    if (ImGui::Button ("<--->")) {cords->side_bor+= 50;}
-//    if (ImGui::Button (">-<")) {cords->side_bor-= 50;}
-//    if (ImGui::Button ("-\n\n-")) {cords->up_down_bor+= 50;}
-//    if (ImGui::Button ("-\n-")) {cords->up_down_bor-= 50;}
-//    // CHANGE
-//    if (ImGui::Button ("Print Cords.")) {
-//        cout << "deathCords = make_shared<MenuCords>(" << cords->x_pos << "," << cords->y_pos << " ," << cords->up_down_bor << " ," << cords->side_bor << ");\n" << endl;
-//    }
 
     ImGui::End();
 }

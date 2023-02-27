@@ -26,6 +26,7 @@
 
 #define MOVEMENT_DISTANCE 0.10f
 
+#define MAX_TIMER_FOR_LAST_SPAWN 200
 
 #include "algebra.h"
 
@@ -187,19 +188,22 @@ private:
     void RecreateSnake(int numOfStartChildren);
 
     void RestartGame(){
+        // regen snake
         RecreateSnake(startingHealth - snakeNodes.size());
         ResetEnv();
         // TODO make levels - the FIRST LEVEL HERE \/
 
     }
     void RestartLevel(){
-        RecreateSnake(startingHealth - snakeNodes.size());
         ResetEnv();
-        // TODO make levels - THE SAME LEVEL HERE \/
+        // TODO reset timer - THE SAME LEVEL HERE \/
+        levelTimer = 1;
     }
     void NextLevel(){
         ResetEnv();
-        // TODO make levels - THE NEXT LEVEL HERE \/
+        // TODO change score needed to pass - THE NEXT LEVEL HERE \/
+        currentLevel++;
+        levelTimer = 1;
     }
     void ResetEnv(){
         ResetSnake();
@@ -211,6 +215,10 @@ private:
 
     int score = 0;
     int startingHealth = 0;
+    int currentLevel = 1;
+    int levelTimer = 1;
+    int ScoreToPass(){return static_cast<int>(3 + 2.35 * currentLevel);}
+    int BombNum(){return 2 * ScoreToPass();}
 
     Vec3 snakeStartPo = {-10, 0, -10};
 
