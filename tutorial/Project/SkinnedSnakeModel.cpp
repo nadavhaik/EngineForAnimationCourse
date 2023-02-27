@@ -14,6 +14,8 @@ SkinnedSnakeModel::SkinnedSnakeModel(std::string name, std::shared_ptr<cg3d::Mes
                                      std::shared_ptr<cg3d::Material> material, std::vector<std::shared_ptr<Model>> joints) :
         cg3d::Movable(name), Model(name, mesh, std::move(material)), joints(joints) {
 
+    originalMesh = mesh;
+
     if(mesh->data.size() > 1) {
         throw std::runtime_error("More than 1 mesh isn't supported here!!!");
     }
@@ -75,7 +77,6 @@ void SkinnedSnakeModel::Skin() {
     int dim = Cp.cols();
     Eigen::MatrixXd T(BE.rows() * (dim + 1), dim);
 
-    auto originalMesh = Model::GetMesh();
     auto modifiedMesh = modifiedMeshList[0];
     for (int i = 0; i < joints.size(); i++) {
        vTs[i] = joints[i]->GetTranslation().cast<double>();
@@ -100,7 +101,7 @@ void SkinnedSnakeModel::Skin() {
                 a.matrix().transpose().block(0, 0, dim + 1, dim);
     }
 
-    igl::dqs(modifiedMesh->data[0].vertices, W, vQs, vTs, U);
+    igl::dqs(originalMesh->data[0].vertices, W, vQs, vTs, U);
     igl::deform_skeleton(Cp, BE, T, CT, BET);
 
 
@@ -110,16 +111,21 @@ void SkinnedSnakeModel::Skin() {
     Eigen::MatrixXd H;
     Eigen::MatrixXd N;
 
-    H << 0, 0;
-    igl::triangle::triangulate(U, BET, H, "p", Vout, F);
+    H.resize(1, 3);
+    H << 0, 0, 0;
+    Eigen::Matrix3d rot = GetRotation().cast<double>();
+    U = (rot * U.transpose()).transpose();
+    igl::triangle::triangulate(U, BET, H, "pq0.1a", Vout, F);
     U = Vout;
 
-    igl::per_vertex_normals(U, F, N);
+//    N.resize(U.rows(), U.cols());
+//    N.setZero();
+//    igl::per_vertex_normals(U, F, N);
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Zero(U.rows(),2);
 
-    std::vector<cg3d::MeshData> newMeshDataList = {{U, F, N, textureCoords}};
+    std::vector<cg3d::MeshData> newMeshDataList = {{U, F, originalMesh->data[0].vertexNormals, textureCoords}};
     modifiedMeshList = {std::make_shared<Mesh>("modified mesh", newMeshDataList)};
-//    SetMeshList(modifiedMeshList);
+    SetMeshList(modifiedMeshList);
 }
 
 std::shared_ptr<Mesh> SkinnedSnakeModel::GetMesh(int index) const {

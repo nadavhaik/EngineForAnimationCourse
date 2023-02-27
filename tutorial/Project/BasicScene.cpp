@@ -106,10 +106,10 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     snakeSkin = SkinnedSnakeModel::Create("Snake skin", snakeMesh, snakeMaterial, allNodes);
 
     snakeSkin->Skin();
-    snakeSkin->Scale(3.5, Axis::Z);
-    snakeSkin->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
-    snakeSkin->Translate(-10, Axis::Z);
-    snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
+//    snakeSkin->Scale(3.5, Axis::Z);
+//    snakeSkin->Rotate(NINETY_DEGREES_IN_RADIANS, Axis::Y);
+//    snakeSkin->Translate(-10, Axis::Z);
+//    snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
 //    snakeRoot->AddChild(snakeSkin);
     root->AddChild(snakeSkin);
 

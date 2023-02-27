@@ -36,6 +36,7 @@ private:
     std::vector<Eigen::Vector3d> vCs;
     std::vector<Eigen::Vector3d> vTs;
     Eigen::Quaterniond quat;
+    std::shared_ptr<Mesh> originalMesh;
 
 
 
