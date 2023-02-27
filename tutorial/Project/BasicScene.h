@@ -99,6 +99,10 @@ private:
         // TODO
         //        ShortenSnake();
     }
+    void Hit() {
+        soundManager.PlayHitSoundEffect();
+        ShortenSnake();
+    }
     void EatPrize(std::shared_ptr<MovingObject> object){
         RemoveMoving(object);
         soundManager.PlayPrizeSoundEffect();

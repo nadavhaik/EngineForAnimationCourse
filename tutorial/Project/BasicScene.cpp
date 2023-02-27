@@ -440,7 +440,7 @@ void BasicScene::DetectCollisions() {
     for(int i=2; i<snakeNodes.size(); i++) {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
-            ShortenSnake();
+            Hit();
         }
     }
 
