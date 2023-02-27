@@ -127,24 +127,6 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
         AddToTail(snakeNodes.back());
     }
 
-//    // create the model for the apple
-//    auto newModel = BallModel::Create("prize", prizeMesh, prizeMaterial);
-//
-//    auto velocity = 0;
-//
-//    MovingObject n(PRIZE, newModel, newModel->GetRotation() * Eigen::Vector3f (0,0,1), velocity, root);
-//
-//    root->AddChild(newModel);
-//
-//    movingObjects.push_back(make_shared<MovingObject>(n));
-//
-////    newModel->Translate(RandomSpawnPoint());
-//    newModel->Translate(Vec3(0,0,9999));
-//    newModel->Scale(0.02f, Axis::XYZ);
-//
-//
-//    movingObjects.push_back(std::make_shared<MovingObject>(n));
-
     RegisterPeriodic(UPDATE_INTERVAL_MILLIS, [this]() {PeriodicFunction();});
 }
 
@@ -197,7 +179,7 @@ void BasicScene::Update(const Program& program, const Eigen::Matrix4f& proj, con
 
     mtx.lock();
     Scene::Update(program, proj, view, model);
-    program.SetUniform4f("lightColor", 0.8f, 0.3f, 0.0f, 0.5f);
+//    program.SetUniform4f("lightColor", 0.8f, 0.3f, 0.0f, 0.5f);
     program.SetUniform4f("Kai", 1.0f, 0.3f, 0.6f, 1.0f);
     program.SetUniform4f("Kdi", 0.5f, 0.5f, 0.0f, 1.0f);
     program.SetUniform1f("specular_exponent", 5.0f);

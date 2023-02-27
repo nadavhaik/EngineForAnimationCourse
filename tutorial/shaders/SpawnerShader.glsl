@@ -6,7 +6,6 @@ uniform mat4 Proj;
 in vec3 position_eye;
 in vec3 normal_eye;
 uniform vec4 light_position;
-uniform vec4 lightColor;
 in vec4 Ksi;
 uniform vec4 Kdi;
 uniform vec4 Kai;
@@ -20,6 +19,7 @@ uniform vec4 color;
 out vec4 Color;
 void main()
 {
+    vec4 lightColor = vec4(0.5, 0.1, 0.5, 0.1);
     vec3 Ls = vec3(lightColor);
     vec3 Ld = vec3(lightColor);
     vec3 La = vec3(lightColor);
@@ -39,7 +39,7 @@ void main()
     vec3 Is = Ls * vec3(Ksi) * specular_factor;    // specular intensity
 //    Color = color - vec4(Ia + Id +Is, 0);
     //      Color = color - vec4(Ia + Id +Is ,0.5);
-          Color = vec4(Ia + Id +Is ,0.5);
+    Color = vec4(Ia + Id +Is ,0.5);
 
     //= mix(vec4(1,1,1,1), texture(sampler1, texcoordi), texture_factor) * color;
     //if (fixed_color != vec4(0.0)) outColor = fixed_color;
