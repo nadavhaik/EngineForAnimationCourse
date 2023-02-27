@@ -66,7 +66,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     background->SetStatic();
 
     topViewCam->Translate(-20, Axis::Z);
-    camera = topViewCam;
+//    camera = topViewCam;
 
     auto snakeShader = std::make_shared<Program>("shaders/phongShader");
     auto prizeShader = std::make_shared<Program>("shaders/PrizeShader");
