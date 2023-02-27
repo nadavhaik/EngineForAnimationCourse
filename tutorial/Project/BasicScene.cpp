@@ -142,7 +142,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     std::shared_ptr<Mesh> coordsys = std::make_shared<Mesh>("coordsys",vertices,faces,vertexNormals,textureCoords);
 
 //    int numOfStartChildren = 1;
-    int numOfStartChildren = 5;
+    int numOfStartChildren = 15;
     RecreateSnake(numOfStartChildren);
 
 //    (std::string name, std::shared_ptr<cg3d::Mesh> mesh,
