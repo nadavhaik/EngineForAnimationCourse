@@ -71,9 +71,11 @@ public:
 
 private:
     template<typename... Args>
-    explicit BallModel(std::string name, std::shared_ptr<cg3d::Mesh> mesh, std::shared_ptr<cg3d::Material> material) :
-        cg3d::Movable(name), BoundableModel{name, std::move(mesh), std::move(material)} {}
+    explicit BallModel(std::string name, std::shared_ptr<cg3d::Mesh> mesh,
+                       std::shared_ptr<cg3d::Material> material, float radius=BALL_RADIUS) :
+        cg3d::Movable(name), BoundableModel{name, std::move(mesh), std::move(material)}, radius(radius) {}
     float GetScaledRadius();
+    float radius;
 };
 #define BallPtr std::shared_ptr<BallModel>
 

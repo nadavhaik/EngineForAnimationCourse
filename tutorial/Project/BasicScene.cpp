@@ -82,8 +82,6 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
     backgroundBox->SetStatic();
     backgroundBox->CalculateBB();
  
-    auto program = std::make_shared<Program>("shaders/phongShader");
-    auto program1 = std::make_shared<Program>("shaders/pickingShader");
 
     snakeMaterial = {std::make_shared<Material>("snakeMaterial", snakeShader)}; // empty snakeMaterial
     prizeMaterial = {std::make_shared<Material>("prizeMaterial", prizeShader)}; // empty apple material
