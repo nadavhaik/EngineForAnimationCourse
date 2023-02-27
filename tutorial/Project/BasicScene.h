@@ -59,6 +59,7 @@ public:
     void AddViewportCallback(cg3d::Viewport* _viewport) override;
     void ViewportSizeCallback(cg3d::Viewport* _viewport) override;
     void Rotate(shared_ptr<Snake> snake);
+    void FineTune(shared_ptr<Snake> snake);
 
     Vector3f RandomSpawnPoint();
     void AddPrize();

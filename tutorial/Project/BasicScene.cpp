@@ -301,7 +301,7 @@ void BasicScene::DetectCollisions() {
         std::shared_ptr<NodeModel> node = snakeNodes[i]->GetNodeModel();
         if(ModelsCollide(head, node)) {
             std::cerr << "Collusion With Tail!!!" << std::endl;
-            exit(-1);
+//            exit(-1);
         }
     }
 
@@ -407,18 +407,17 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 
     auto rotation = snake->Rotate();
 
-//    // if shouldnt rotate, safe return
-//    if (rotation.second == -1)
-//        return;
-//
     while(rotation != nullptr)
     {
         float angle = rotation->angle;
         Axis turnAxis = rotation->axis;
 
         // else rotate by angle and turnAxis as in the needed turn
-        snake->GetNodeModel()->Rotate(angle, turnAxis);
         snake->invisibleBrother->Rotate(angle, turnAxis);
+        if(snake->beziers.empty()) {
+            snake->GetNodeModel()->Rotate(angle, turnAxis);
+        }
+
 
         float distance = algebra::distance(snake->GetNodeModel()->GetTranslation(), snake->invisibleBrother->GetTranslation());
 
@@ -430,35 +429,21 @@ void BasicScene::Rotate(shared_ptr<Snake> snake) {
 //         fine tuning for tails:
         if(rotation == nullptr && snake->IsTail() && !snake->parent->InRotation() &&
                 AlmostEqual(snake->GetNodeModel()->GetRotation(), snake->parent->GetNodeModel()->GetRotation())) {
-//            continue;
-//                snake->GetNodeModel()->GetRotation().isApprox(snake->parent->GetNodeModel()->GetRotation())) {
-
-            Vec3 delta = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
-            Vec3 deltaInSystem = snake->parent->GetNodeModel()->GetRotation().inverse() * delta;
-
-            Vec3 fixedDelta = snake->parent->GetNodeModel()->GetRotation() * Vec3(deltaInSystem.x(), deltaInSystem.y(), 0);
-
-            std::cout << "delta: (" << delta.x() << "," << delta.y() << ","
-                      << delta.z() << ")" << std::endl;
-            std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
-                << deltaInSystem.z() << ")" << std::endl;
-
-            float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
-            if(deviation > 0.01) return;
-
-            snake->GetNodeModel()->Translate(fixedDelta);
-//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(), {deltaInSystem.x(), deltaInSystem.y(), deltaInSystem.z()});
-//            snake->GetNodeModel()->Translate({delta.x(), delta.y(), delta.z()});
-
-//            Vec3 parentPos = snake->parent->GetNodeModel()->GetTranslation();
-//            Vec3 deltaFromParent = parentPos - snake->GetNodeModel()->GetTranslation();
-
-//            float distanceFromParent = algebra::distance(parentPos, deltaFromParent);
-//            snake->GetNodeModel()->TranslateInSystem(snake->GetNodeModel()->GetRotation(),
-//                                                     {0, 0, 1.0f - distanceFromParent});
-//            snake->GetNodeModel()->SetCenter(snake->GetNodeModel()->GetRotation() * ((1.0f - distanceFromParent) * deltaFromParent));
-//            snake->GetNodeModel()->Translate({0, 0, 1.0f - distanceFromParent});
+//            FineTune(snake);
         }
+    }
+
+    if(!snake->beziers.empty()) {
+        auto bez = snake->beziers.front();
+        float t = bez.getT();
+        if(t >= 1) {
+            snake->beziers.pop();
+            FineTune(snake);
+            return;
+        }
+        float angle = t * bez.rotationInfo.totalAngle - bez.rotationInfo.rotated;
+        snake->GetNodeModel()->Rotate(angle, bez.rotationInfo.axis);
+        snake->beziers.front().rotationInfo.rotated += angle;
     }
 
 
@@ -470,7 +455,7 @@ void BasicScene::AddToTail(shared_ptr<Snake> parent) {
     shared_ptr<NodeModel> _parent = parent->GetNodeModel();
     double heading = parent->heading;
 
-    root->AddChild(newNode);
+//    root->AddChild(newNode);
     newNode->Rotate(_parent->GetRotation());
     newNode->Translate(_parent->GetTranslation() - _parent->GetRotation() * Vec3(0, 0, 1));
 
@@ -589,4 +574,22 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
 bool BasicScene::InBox(const std::shared_ptr<BoundableModel>& model) {
     return backgroundBox->GetBoundingBox().contains(model->GetBoundingBox());
+}
+
+void BasicScene::FineTune(shared_ptr<Snake> snake) {
+    Vec3 delta = snake->parent->GetNodeModel()->GetTranslation() - snake->GetNodeModel()->GetTranslation() - snake->parent->GetNodeModel()->GetRotation() * Eigen::Vector3f(0, 0, 1);
+    Vec3 deltaInSystem = snake->parent->GetNodeModel()->GetRotation().inverse() * delta;
+
+    Vec3 fixedDelta = snake->parent->GetNodeModel()->GetRotation() * Vec3(deltaInSystem.x(), deltaInSystem.y(), 0);
+
+    std::cout << "delta: (" << delta.x() << "," << delta.y() << ","
+              << delta.z() << ")" << std::endl;
+    std::cout << "delta in system: (" << deltaInSystem.x() << "," << deltaInSystem.y() << ","
+              << deltaInSystem.z() << ")" << std::endl;
+
+    float deviation = std::abs(1.0f - algebra::abs({deltaInSystem.x(), deltaInSystem.y(), 0}));
+    if(deviation > 0.01) return;
+
+    snake->GetNodeModel()->Translate(fixedDelta);
+    snake->invisibleBrother->Translate(fixedDelta);
 }

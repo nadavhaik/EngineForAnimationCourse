@@ -2,6 +2,7 @@
 // Created by User on 2/23/2023.
 //
 #include "MovingObject.h"
+#include "bezier_curve.h"
 
 using namespace cg3d;
 using namespace std;
@@ -68,7 +69,7 @@ bool SamePos(Vec3 a, Vec3 b){
 void Snake::MoveForward() {
     if (rotationsQueue.size() > MAX_QUEUE_SIZE)
             return;
-    auto rot = GetNodeModel()->GetRotation();
+    auto rot = invisibleBrother->GetRotation();
 
     Vector3f front = Vector3f (0,0,1);
     Vector3f back = -1.0 * front;
@@ -103,15 +104,28 @@ void Snake::MoveForward() {
 
 
     // Translate to p2
-    snakeModel->Translate((velocity / 30.0f) * p2);
     invisibleBrother->Translate((velocity / 30.0f) * p2);
+    if(beziers.empty()) {
+        snakeModel->Translate((velocity / 30.0f) * p2);
+    } else {
+        float t = beziers.front().getT();
+        if(t >= 1) {
+            return;
+
+        } else {
+            snakeModel->Translate(beziers.front().curve(t) - snakeModel->GetTranslation());
+        }
+
+    }
     // or
     // Do bezier
 }
 
 void Snake::AddRotation(shared_ptr<RotationCommand> command) {
-    if (rotationsQueue.size() > MAX_QUEUE_SIZE) return;
     rotationsQueue.push(std::make_shared<FutureRotation>(snakeModel->GetTranslation(), *command));
+    if(IsTail()) {
+        AddBezier(command);
+    }
 }
 
 /**
@@ -140,7 +154,7 @@ shared_ptr<RotationCommand> Snake::Rotate() {
     if (child != nullptr){
 //        cout << "the needed position to rotate: " << poppedPair.first << "\n" << endl;
 //        cout << "my position: " << snakeModel->GetTranslation() << "\n" << endl;
-        child->AddRotation(std::make_shared<RotationCommand>(commandPtr->axis, commandPtr->angle, snakeModel->GetTranslation()));
+        child->AddRotation(std::make_shared<RotationCommand>(commandPtr->axis, commandPtr->angle, invisibleBrother->GetTranslation()));
     }
 
     return commandPtr;
@@ -161,8 +175,26 @@ bool Snake::InRotation() {
 
 Snake::Snake(SnakeType _type, shared_ptr<NodeModel> _model, Vector3f _direction, shared_ptr<Snake> _parent,
              shared_ptr<Movable> root, float _h):
-        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent), heading(_h), snakeModel(_model){
+        MovingObject(SNAKE, nullptr, _direction, 1.5, root), type(_type), parent(_parent),
+        heading(_h), snakeModel(_model){
   invisibleBrother = NodeModel::Create("invisible model", _model->GetMesh(0), _model->material);
+  root->AddChild(invisibleBrother);
   invisibleBrother->SetTransform(_model->GetTransform());
 
+}
+
+void Snake::AddBezier(shared_ptr<RotationCommand> command) {
+
+
+    Vec3 p0 = snakeModel->GetTranslation();
+//    Vec3 p1 = snakeModel->GetRotation() * Vec3(0, 0, 0.00002f);
+    Vec3 p1 = p0 + snakeModel->GetRotation() * Vec3(0, 0, 2.0f);
+    Vec3 p2 = command->destination;
+    std::function<Vec3(float)> curve = CubicBezier(p0, p1, p2);
+    std::function<float(void)> getT = [this, p0, p2]() {
+        return algebra::distance(invisibleBrother->GetTranslation(), p0) / algebra::distance(p2, p0);
+    };
+    Rotation rotation(command->axis, command->angle);
+
+    beziers.push(BezierInformation(curve, getT, rotation));
 }

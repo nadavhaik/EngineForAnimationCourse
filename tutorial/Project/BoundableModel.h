@@ -29,7 +29,6 @@ protected:
     std::vector<Vec3> GetFixedVertices();
     Vec3 GetScalingVec();
     Vec3 ApplySelfTransform(const Vec3 &vec);
-
 };
 #define BoundablePtr std::shared_ptr<BoundableModel>
 

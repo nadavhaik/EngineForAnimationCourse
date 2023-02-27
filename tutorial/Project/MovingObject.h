@@ -42,6 +42,27 @@ struct FutureRotation {
         recievedAt(recievedAt), rotationCommand(rotationCommand) {};
 };
 
+struct Rotation {
+    Axis axis;
+    float angle;
+    Rotation(Axis axis, float angle): axis(axis), angle(angle) {};
+};
+
+struct ContinuousRotation {
+    Axis axis;
+    float totalAngle;
+    float rotated;
+    ContinuousRotation(Axis axis, float angle): axis(axis), totalAngle(angle), rotated(0) {};
+};
+
+struct BezierInformation {
+    std::function<Vec3(float)> curve;
+    std::function<float(void)> getT;
+    ContinuousRotation rotationInfo;
+    BezierInformation(std::function<Vec3(float)> curve,
+                      std::function<float(void)> getT, Rotation rotation):
+        curve(std::move(curve)), getT(std::move(getT)), rotationInfo(rotation.axis, rotation.angle) {};
+};
 
 
 class MovingObject {
@@ -86,11 +107,13 @@ public:
     shared_ptr<NodeModel> GetNodeModel(){return snakeModel;};
     void MoveForward();
     void AddRotation(shared_ptr<RotationCommand> command);
+    void AddBezier(shared_ptr<RotationCommand> command);
     void ClearQueue();
     shared_ptr<RotationCommand> Rotate();
     queue<shared_ptr<FutureRotation>> rotationsQueue;
     bool InRotation();
     shared_ptr<NodeModel> invisibleBrother;
+    std::queue<BezierInformation> beziers;
 
 private:
     shared_ptr<NodeModel> snakeModel;
