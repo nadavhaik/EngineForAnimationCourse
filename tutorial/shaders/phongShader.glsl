@@ -17,6 +17,11 @@
   //uniform float lighting_factor;
   //uniform float texture_factor;
   //out vec4 outColor;
+in vec3 position0;
+
+uniform vec3 cameraPos;
+uniform int fog_enabled;
+
 out vec4 Color;
   void main()
   {
@@ -40,6 +45,18 @@ out vec4 Color;
 //      Color = color - vec4(Ia + Id +Is, 0);
 //      Color = color - vec4(Ia + Id +Is ,0.5);
       Color = vec4(Ia + Id +Is ,0.5);
+
+      if(fog_enabled == 1) {
+          float fog_maxdist = 40;
+          float fog_mindist = 0.1;
+          vec4  fog_colour = vec4(0.7, 0.7, 0.7, 1.0);
+          vec3 diff = cameraPos - position0;
+          float dist = sqrt(diff.x * diff.x + diff.y + diff.y + diff.z * diff.z);
+          float fog_factor = (fog_maxdist - dist) / (fog_maxdist - fog_mindist);
+          fog_factor = clamp(fog_factor, 0.0, 1.0);
+
+          Color = mix(fog_colour, Color, fog_factor);
+      }
 
     //= mix(vec4(1,1,1,1), texture(sampler1, texcoordi), texture_factor) * color;
     //if (fixed_color != vec4(0.0)) outColor = fixed_color;
