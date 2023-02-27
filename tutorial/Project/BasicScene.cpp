@@ -154,7 +154,7 @@ void BasicScene::Init(float fov, int width, int height, float near, float far)
 //    snakeSkin->Translate(-10, Axis::Z);
 //    snakeSkin->Translate(-NODE_LENGTH * 3, Axis::X);
 //    snakeRoot->AddChild(snakeSkin);
-//    root->AddChild(snakeSkin);
+    root->AddChild(snakeSkin);
 
 
 

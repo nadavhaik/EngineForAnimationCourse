@@ -114,7 +114,7 @@ void SkinnedSnakeModel::Skin() {
     H.resize(1, 3);
     H << 0, 0, 0;
     Eigen::Matrix3d rot = GetRotation().cast<double>();
-    U = (rot * U.transpose()).transpose();
+//    U = (rot * U.transpose()).transpose();
     igl::triangle::triangulate(U, BET, H, "pq0.1a", Vout, F);
     U = Vout;
 
