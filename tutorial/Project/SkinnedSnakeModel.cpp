@@ -118,9 +118,7 @@ void SkinnedSnakeModel::Skin() {
     igl::triangle::triangulate(U, BET, H, "pq0.1a", Vout, F);
     U = Vout;
 
-//    N.resize(U.rows(), U.cols());
-//    N.setZero();
-//    igl::per_vertex_normals(U, F, N);
+
     Eigen::MatrixXd textureCoords = Eigen::MatrixXd::Zero(U.rows(),2);
 
     std::vector<cg3d::MeshData> newMeshDataList = {{U, F, originalMesh->data[0].vertexNormals, textureCoords}};
