@@ -688,18 +688,17 @@ void BasicScene::AddViewportCallback(cg3d::Viewport *_viewport) {
 
 void BasicScene::BuildImGui()
 {
-    bool drawPlayerStats = false;
+    bool drawPlayerStats = true;
     switch (menuType) {
         case MAIN:
             menuType = DrawMainMenu();
+            drawPlayerStats = false;
             break;
         case BETWEEN:
             menuType = DrawBetweenMenu();
-            drawPlayerStats = false;
             break;
         case GAME:
             menuType = DrawGameMenu();
-            drawPlayerStats = true;
             break;
         case PAUSE:
             menuType = DrawPauseMenu();
@@ -786,7 +785,7 @@ MenuType BasicScene::DrawBetweenMenu() {
 
     if (ImGui::Button ("\t\t\t\t   Start\t\t\t\t\t\t")){ans = GAME; soundManager.PlayButtonSoundEffect();}
     ImGui::Text("\n\n");
-    if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect();}
+    if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::End();
     return ans;
 }
@@ -860,7 +859,7 @@ MenuType BasicScene::DrawDeathMenu() {
     ImGui::SetWindowPos(ImVec2(cords->x_pos, cords->y_pos), ImGuiCond_Always);
     ImGui::SetWindowSize(ImVec2(cords->side_bor, cords->up_down_bor), ImGuiCond_Always);
 
-    if (ImGui::Button ("\t\t\t\t   Restart\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); RestartLevel();}
+    if (ImGui::Button ("\t\t\t\t  Restart Game\t\t\t\t\t\t")){ans = BETWEEN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
     if (ImGui::Button ("\t\t\t\t  Main Menu\t\t\t\t\t\t")){ans = MAIN; soundManager.PlayButtonSoundEffect(); RestartGame();}
     ImGui::Text("\n\n");
